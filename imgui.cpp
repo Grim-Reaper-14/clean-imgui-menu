@@ -5440,7 +5440,9 @@ bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, b
     const float backup_border_size = g.Style.ChildBorderSize;
     if (!border)
         g.Style.ChildBorderSize = 0.0f;
+    PushStyleVar(ImGuiStyleVar_WindowPadding, border ? ImVec2(20, 60) : ImVec2(0, 80));
     bool ret = Begin(temp_window_name, NULL, flags);
+    PopStyleVar();
     g.Style.ChildBorderSize = backup_border_size;
 
     ImGuiWindow* child_window = g.CurrentWindow;
@@ -5449,13 +5451,11 @@ bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, b
 
     const ImGuiStyle& style = g.Style;
 
-    const ImVec2 label_size = CalcTextSize(name, NULL, true);
-
     const ImVec2 pos = parent_window->DC.CursorPos;
 
     const ImRect check_bb(pos, pos);
 
-    if (name[0] && border) {
+    if (name != NULL && name[0] != '\0' && border) {
 
         const int vtx_idx_1 = GetWindowDrawList()->VtxBuffer.Size;
         RenderText(ImVec2(check_bb.Max.x + 20, check_bb.Min.y + 10), name);
@@ -5485,8 +5485,6 @@ bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, b
 bool ImGui::BeginChild(const char* str_id, const ImVec2& size_arg, bool border, ImGuiWindowFlags extra_flags)
 {
     ImGuiWindow* window = GetCurrentWindow();
-    if (border) ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 60));
-    else ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 80));
     return BeginChildEx(str_id, window->GetID(str_id), size_arg, border, extra_flags | ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoMove);
 }
 
@@ -5500,8 +5498,6 @@ void ImGui::EndChild()
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
-
-    ImGui::PopStyleVar(1);
 
     IM_ASSERT(g.WithinEndChild == false);
     IM_ASSERT(window->Flags & ImGuiWindowFlags_ChildWindow);   // Mismatched BeginChild()/EndChild() calls
