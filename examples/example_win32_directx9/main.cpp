@@ -290,6 +290,88 @@ int main(int, char**)
 
                     break;
 
+                case 7:
+                {
+                    static int  selected_script = 0;
+                    static bool script_enabled[5] = { true, false, false, true, false };
+                    static const char* script_names[] = { "aimbot.lua", "visuals.lua", "misc.lua", "skin_changer.lua", "trigger.lua" };
+                    static int  script_status = 0; // 0=Stopped 1=Running 2=Error
+                    static bool auto_run = false;
+                    static bool safe_mode = true;
+                    static int  exec_interval = 100;
+                    static char output_buf[512] = "[INFO] Script system initialized\n[INFO] Ready to execute\n";
+
+                    // ---- left-top: script list ----
+                    ImGui::BeginChild("Scripts", ImVec2(339, 253), true); {
+                        ImGui::Text("Available Scripts");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        for (int i = 0; i < 5; i++) {
+                            ImGui::PushID(i);
+                            ImGui::Checkbox("##en", &script_enabled[i]);
+                            ImGui::SameLine();
+                            if (ImGui::Selectable(script_names[i], selected_script == i))
+                                selected_script = i;
+                            ImGui::PopID();
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::Button("Load Script", ImVec2(150, 28));
+                        ImGui::SameLine();
+                        ImGui::Button("Reload All", ImVec2(150, 28));
+                    } ImGui::EndChild();
+
+                    // ---- right-top: script info / execution ----
+                    ImGui::SetCursorPos(ImVec2(555, 88 - size_child));
+                    ImGui::BeginChild("ScriptInfo", ImVec2(339, 210), true); {
+                        static const char* status_labels[] = { "Stopped", "Running", "Error" };
+                        static const ImVec4 status_colors[] = {
+                            ImVec4(0.55f, 0.55f, 0.55f, 1.0f),
+                            ImVec4(0.20f, 0.80f, 0.20f, 1.0f),
+                            ImVec4(0.80f, 0.20f, 0.20f, 1.0f)
+                        };
+
+                        ImGui::Text("Script Info");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                        ImGui::Text("Name:    %s", script_names[selected_script]);
+                        ImGui::Text("Author:  Unknown");
+                        ImGui::Text("Version: 1.0");
+                        ImGui::Spacing();
+                        ImGui::TextColored(status_colors[script_status], "Status:  %s", status_labels[script_status]);
+                        ImGui::Spacing();
+
+                        if (ImGui::Button("Execute", ImVec2(150, 28)))
+                            script_status = 1;
+                        ImGui::SameLine();
+                        if (ImGui::Button("Stop", ImVec2(150, 28)))
+                            script_status = 0;
+                    } ImGui::EndChild();
+
+                    // ---- left-bottom: script output ----
+                    ImGui::SetCursorPos(ImVec2(203, 353 - size_child));
+                    ImGui::BeginChild("ScriptOutput", ImVec2(339, 258), true); {
+                        ImGui::Text("Script Output");
+                        ImGui::Separator();
+                        ImGui::InputTextMultiline("##log", output_buf, sizeof(output_buf),
+                            ImVec2(-1, -1), ImGuiInputTextFlags_ReadOnly);
+                    } ImGui::EndChild();
+
+                    // ---- right-bottom: script settings ----
+                    ImGui::SetCursorPos(ImVec2(555, 313 - size_child));
+                    ImGui::BeginChild("ScriptSettings", ImVec2(339, 298), true); {
+                        ImGui::Text("Script Settings");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                        ImGui::Checkbox("Auto Run on Load", &auto_run);
+                        ImGui::Checkbox("Safe Mode", &safe_mode);
+                        ImGui::SliderInt("Exec Interval (ms)", &exec_interval, 1, 1000);
+                    } ImGui::EndChild();
+
+                    break;
+                }
+
                 case 8:
 
                     ImGui::BeginChild("Configuration", ImVec2(339, 253), true); {
