@@ -4,7 +4,7 @@
 
 #include <d3d9.h>
 #pragma comment(lib,"d3d9.lib")
-#include <d3dx9.h>
+#include <dxsdk-d3dx/d3dx9.h>
 #pragma comment(lib,"d3dx9.lib")
 
 #include <tchar.h>

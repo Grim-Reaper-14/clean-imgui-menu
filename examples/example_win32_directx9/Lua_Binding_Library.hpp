@@ -1,9 +1,8 @@
 #pragma once
 
-// sol2 wraps the Lua C API with modern C++ idioms.
-// The single-header version is bundled at third_party/sol2/sol.hpp.
+// sol2 and Lua are supplied by the repository's vcpkg manifest.
 #define SOL_ALL_SAFETIES_ON 1
-#include "third_party/sol2/sol.hpp"
+#include <sol/sol.hpp>
 
 // Registers all application-side functions into a sol::state so that scripts
 // can call them.  Add new binding groups in the corresponding .cpp file.

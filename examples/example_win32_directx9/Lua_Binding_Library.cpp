@@ -1,6 +1,8 @@
 #include "Lua_Binding_Library.hpp"
 #include "Lua_Manager.hpp"
 
+#include <Windows.h>
+
 // Accent color shared with main.cpp
 extern float accent_color[4];
 
