@@ -15,6 +15,8 @@
 #include "segue_font.h"
 #include "ico_font.h"
 
+#include "Lua_Manager.hpp"
+
 float color_edit4[4] = { 1.00f, 1.00f, 1.00f, 1.000f };
 
 float accent_color[4] = { 0.745f, 0.151f, 0.151f, 1.000f };
@@ -289,6 +291,141 @@ int main(int, char**)
                     }ImGui::EndChild();
 
                     break;
+
+                case 7:
+                {
+                    LuaManager& lua      = LuaManager::Instance();
+                    auto& modMgr         = lua.GetModuleManager();
+                    auto& modules        = modMgr.GetModules();
+
+                    static int  selected_script = 0;
+                    static char cmd_buf[128]    = "";
+
+                    // Clamp selection to valid range
+                    if (!modules.empty() && selected_script >= modMgr.GetCount())
+                        selected_script = modMgr.GetCount() - 1;
+
+                    // ---- left-top: script list ----
+                    ImGui::BeginChild("Scripts", ImVec2(339, 253), true); {
+                        ImGui::Text("Available Scripts");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        if (modules.empty())
+                        {
+                            ImGui::TextDisabled("No scripts found in scripts/");
+                        }
+                        else
+                        {
+                            for (int i = 0; i < modMgr.GetCount(); i++)
+                            {
+                                ImGui::PushID(i);
+                                bool en = modules[i].IsEnabled();
+                                if (ImGui::Checkbox("##en", &en))
+                                    const_cast<LuaModule&>(modules[i]).SetEnabled(en);
+                                ImGui::SameLine();
+                                if (ImGui::Selectable(modules[i].GetName().c_str(), selected_script == i))
+                                    selected_script = i;
+                                ImGui::PopID();
+                            }
+                        }
+
+                        ImGui::Spacing();
+                        if (ImGui::Button("Load Script", ImVec2(150, 28)))
+                            lua.RefreshScripts();
+                        ImGui::SameLine();
+                        if (ImGui::Button("Reload All", ImVec2(150, 28)))
+                            modMgr.ReloadAll(lua.GetState().lua_state());
+                    } ImGui::EndChild();
+
+                    // ---- right-top: script info / execution ----
+                    ImGui::SetCursorPos(ImVec2(555, 88 - size_child));
+                    ImGui::BeginChild("ScriptInfo", ImVec2(339, 210), true); {
+                        static const char* status_labels[] = { "Stopped", "Running", "Error" };
+                        static const ImVec4 status_colors[] = {
+                            ImVec4(0.55f, 0.55f, 0.55f, 1.0f),
+                            ImVec4(0.20f, 0.80f, 0.20f, 1.0f),
+                            ImVec4(0.80f, 0.20f, 0.20f, 1.0f)
+                        };
+
+                        ImGui::Text("Script Info");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        if (!modules.empty() && selected_script < modMgr.GetCount())
+                        {
+                            const LuaModule& sel = modules[selected_script];
+                            ImGui::Text("Name:    %s", sel.GetName().c_str());
+                            ImGui::Text("Author:  %s", sel.GetAuthor().c_str());
+                            ImGui::Text("Version: %s", sel.GetVersion().c_str());
+                            ImGui::Spacing();
+                            int si = static_cast<int>(sel.GetStatus());
+                            ImGui::TextColored(status_colors[si], "Status:  %s", status_labels[si]);
+                            ImGui::Spacing();
+                            if (ImGui::Button("Execute", ImVec2(150, 28)))
+                                const_cast<LuaModule&>(sel).Execute(lua.GetState().lua_state());
+                            ImGui::SameLine();
+                            if (ImGui::Button("Stop", ImVec2(150, 28)))
+                                const_cast<LuaModule&>(sel).Unload();
+                        }
+                        else
+                        {
+                            ImGui::TextDisabled("No script selected");
+                        }
+                    } ImGui::EndChild();
+
+                    // ---- left-bottom: script output ----
+                    ImGui::SetCursorPos(ImVec2(203, 353 - size_child));
+                    ImGui::BeginChild("ScriptOutput", ImVec2(339, 258), true); {
+                        ImGui::Text("Script Output");
+                        ImGui::Separator();
+
+                        // Read-only log driven by LuaManager's output buffer
+                        std::string& outBuf = const_cast<std::string&>(lua.GetOutputBuffer());
+                        ImGui::InputTextMultiline("##log",
+                            outBuf.data(), outBuf.size() + 1,
+                            ImVec2(-1, 195), ImGuiInputTextFlags_ReadOnly);
+
+                        // Command input
+                        ImGui::SetNextItemWidth(-1);
+                        if (ImGui::InputText("##cmd", cmd_buf, sizeof(cmd_buf),
+                                             ImGuiInputTextFlags_EnterReturnsTrue))
+                        {
+                            std::string result = lua.GetCommands().ExecuteCommand(cmd_buf, lua.GetState().lua_state());
+                            if (result == "__CLEAR__")
+                                lua.ClearOutput();
+                            else
+                                lua.AppendOutput("> " + std::string(cmd_buf) + "\n" + result + "\n");
+                            cmd_buf[0] = '\0';
+                        }
+                    } ImGui::EndChild();
+
+                    // ---- right-bottom: script settings ----
+                    ImGui::SetCursorPos(ImVec2(555, 313 - size_child));
+                    ImGui::BeginChild("ScriptSettings", ImVec2(339, 298), true); {
+                        ImGui::Text("Script Settings");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        static bool auto_run    = false;
+                        static bool safe_mode   = true;
+                        static int  exec_interval = 100;
+                        ImGui::Checkbox("Auto Run on Load", &auto_run);
+                        ImGui::Checkbox("Safe Mode", &safe_mode);
+                        ImGui::SliderInt("Exec Interval (ms)", &exec_interval, 1, 1000);
+                        ImGui::Spacing();
+                        if (ImGui::Button("Initialize Lua", ImVec2(150, 28)))
+                        {
+                            if (!lua.IsInitialized())
+                                lua.Initialize("scripts");
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Shutdown Lua", ImVec2(150, 28)))
+                            lua.Shutdown();
+                    } ImGui::EndChild();
+
+                    break;
+                }
 
                 case 8:
 
