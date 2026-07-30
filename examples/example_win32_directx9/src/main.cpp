@@ -8,9 +8,11 @@
 #pragma comment(lib,"d3dx9.lib")
 
 #include <tchar.h>
+#include <string>
 
 #include "background_pic.h"
 #include "blur.hpp"
+#include "config/ConfigManager.hpp"
 
 #include "segue_font.h"
 #include "ico_font.h"
@@ -20,6 +22,9 @@
 float color_edit4[4] = { 1.00f, 1.00f, 1.00f, 1.000f };
 
 float accent_color[4] = { 0.745f, 0.151f, 0.151f, 1.000f };
+
+static MenuSettings menu_settings;
+static constexpr const char* settings_path = "setting.json";
 
 static int select_count = 0;
 
@@ -243,17 +248,15 @@ int main(int, char**)
 
                     ImGui::BeginChild("Editor", ImVec2(339, 253), true); {
 
-                        static bool test_0 = false;
-                        ImGui::Checkbox("Checkbox_0", &test_0);
+                        ImGui::Checkbox("Checkbox_0", &menu_settings.checkbox0);
 
-                        static bool test_1 = false;
-                        ImGui::Checkbox("Checkbox_1", &test_1);
+                        ImGui::Checkbox("Checkbox_1", &menu_settings.checkbox1);
 
-                        static int slider_test_0 = 50;
-                        ImGui::SliderInt("Slider Intager", &slider_test_0, 1, 400);
+                        ImGui::SliderInt("Slider Intager",
+                            &menu_settings.sliderInteger, 1, 400);
 
-                        static float slider_test_1 = 0;
-                        ImGui::SliderFloat("Slider Float", &slider_test_1, 0.00f, 5.00f, "%.2f");
+                        ImGui::SliderFloat("Slider Float",
+                            &menu_settings.sliderFloat, 0.00f, 5.00f, "%.2f");
 
                     }ImGui::EndChild();
 
@@ -271,12 +274,12 @@ int main(int, char**)
 
                     ImGui::BeginChild("Aimbot", ImVec2(339, 258), true); {
 
-                        static int selectedItem = 0;
                         static const char* items[]{ "Always", "Toggle" };
-                        ImGui::Combo("Aimbot Mode", &selectedItem, items, IM_ARRAYSIZE(items), 5);
+                        ImGui::Combo("Aimbot Mode", &menu_settings.aimbotMode,
+                            items, IM_ARRAYSIZE(items), 5);
 
-                        static char buf[64] = { "" };
-                        ImGui::InputText("InputText", buf, 64);
+                        ImGui::InputText("InputText", menu_settings.inputText.data(),
+                            menu_settings.inputText.size());
 
                     }ImGui::EndChild();
 
@@ -285,8 +288,8 @@ int main(int, char**)
 
                     ImGui::BeginChild("Keybinds", ImVec2(339, 298), true); {
 
-                        static int k, m = 1;
-                        ImGui::Keybind("Aimbot Keybind", &k, &m);
+                        ImGui::Keybind("Aimbot Keybind", &menu_settings.aimbotKey,
+                            &menu_settings.aimbotKeyMode);
 
                     }ImGui::EndChild();
 
@@ -400,20 +403,13 @@ int main(int, char**)
                         }
                     } ImGui::EndChild();
 
-                    // ---- right-bottom: script settings ----
+                    // ---- right-bottom: inline Lua UI ----
                     ImGui::SetCursorPos(ImVec2(555, 313 - size_child));
-                    ImGui::BeginChild("ScriptSettings", ImVec2(339, 298), true); {
-                        ImGui::Text("Script Settings");
+                    ImGui::BeginChild("LuaPanel", ImVec2(339, 298), true); {
+                        ImGui::Text("Lua UI");
                         ImGui::Separator();
                         ImGui::Spacing();
 
-                        static bool auto_run    = false;
-                        static bool safe_mode   = true;
-                        static int  exec_interval = 100;
-                        ImGui::Checkbox("Auto Run on Load", &auto_run);
-                        ImGui::Checkbox("Safe Mode", &safe_mode);
-                        ImGui::SliderInt("Exec Interval (ms)", &exec_interval, 1, 1000);
-                        ImGui::Spacing();
                         if (ImGui::Button("Initialize Lua", ImVec2(150, 28)))
                         {
                             if (!lua.IsInitialized())
@@ -422,19 +418,70 @@ int main(int, char**)
                         ImGui::SameLine();
                         if (ImGui::Button("Shutdown Lua", ImVec2(150, 28)))
                             lua.Shutdown();
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        if (lua.IsInitialized())
+                            lua.RenderCallbacks();
+                        else
+                            ImGui::TextDisabled("Initialize Lua, then execute a script.");
                     } ImGui::EndChild();
 
                     break;
                 }
 
                 case 8:
+                {
+                    static std::string config_status =
+                        "Save or load your current menu settings.";
 
                     ImGui::BeginChild("Configuration", ImVec2(339, 253), true); {
+                        ImGui::Text("Configuration");
+                        ImGui::Separator();
+                        ImGui::Spacing();
 
+                        if (ImGui::Button("Save Settings", ImVec2(150, 32)))
+                        {
+                            std::string error;
+                            if (ConfigManager::Save(settings_path, menu_settings,
+                                    color_edit4, accent_color, error))
+                            {
+                                config_status =
+                                    "Saved successfully to setting.json";
+                            }
+                            else
+                            {
+                                config_status = "Save failed: " + error;
+                            }
+                        }
+
+                        ImGui::SameLine();
+                        if (ImGui::Button("Load Settings", ImVec2(150, 32)))
+                        {
+                            std::string error;
+                            if (ConfigManager::Load(settings_path, menu_settings,
+                                    color_edit4, accent_color, error))
+                            {
+                                config_status =
+                                    "Loaded successfully from setting.json";
+                            }
+                            else
+                            {
+                                config_status = "Load failed: " + error;
+                            }
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::TextDisabled("File: %s", settings_path);
+                        ImGui::Spacing();
+                        ImGui::TextWrapped("%s", config_status.c_str());
 
                     }ImGui::EndChild();
 
                     break;
+                }
 
                 }
             }
@@ -458,6 +505,7 @@ int main(int, char**)
             ResetDevice();
     }
 
+    LuaManager::Instance().Shutdown();
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

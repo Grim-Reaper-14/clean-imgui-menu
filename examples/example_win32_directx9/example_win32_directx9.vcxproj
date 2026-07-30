@@ -89,7 +89,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src;$(ProjectDir)src\api;$(ProjectDir)src\lua;$(ProjectDir)src\render;..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -102,7 +102,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src;$(ProjectDir)src\api;$(ProjectDir)src\lua;$(ProjectDir)src\render;..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -117,7 +117,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src;$(ProjectDir)src\api;$(ProjectDir)src\lua;$(ProjectDir)src\render;..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
@@ -135,7 +135,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src;$(ProjectDir)src\api;$(ProjectDir)src\lua;$(ProjectDir)src\render;..\..;..\..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
@@ -153,39 +153,53 @@
     <ClCompile Include="..\..\imgui_draw.cpp" />
     <ClCompile Include="..\..\imgui_tables.cpp" />
     <ClCompile Include="..\..\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="..\..\backends\imgui_impl_dx9.cpp" />
     <ClCompile Include="..\..\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="blur.cpp" />
-    <ClCompile Include="Lua_Binding_Library.cpp" />
-    <ClCompile Include="Lua_Commands.cpp" />
-    <ClCompile Include="Lua_Manager.cpp" />
-    <ClCompile Include="Lua_Module.cpp" />
-    <ClCompile Include="Lua_Module_Manager.cpp" />
-    <ClCompile Include="Lua_Scripts_Manager.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\render\blur.cpp" />
+    <ClCompile Include="src\api\FileSystemAPI.cpp" />
+    <ClCompile Include="src\api\ImGuiAPI.cpp" />
+    <ClCompile Include="src\api\LoggerAPI.cpp" />
+    <ClCompile Include="src\config\ConfigManager.cpp" />
+    <ClCompile Include="src\lua\Lua_Binding_Library.cpp" />
+    <ClCompile Include="src\lua\Lua_Commands.cpp" />
+    <ClCompile Include="src\lua\Lua_Manager.cpp" />
+    <ClCompile Include="src\lua\Lua_Module.cpp" />
+    <ClCompile Include="src\lua\Lua_Module_Manager.cpp" />
+    <ClCompile Include="src\lua\Lua_Scripts_Manager.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\imconfig.h" />
     <ClInclude Include="..\..\imgui.h" />
     <ClInclude Include="..\..\imgui_internal.h" />
+    <ClInclude Include="..\..\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="..\..\backends\imgui_impl_dx9.h" />
     <ClInclude Include="..\..\backends\imgui_impl_win32.h" />
     <ClInclude Include="background_pic.h" />
-    <ClInclude Include="blur.hpp" />
     <ClInclude Include="blur_x.h" />
     <ClInclude Include="blur_y.h" />
     <ClInclude Include="ico_font.h" />
-    <ClInclude Include="Lua_Binding_Library.hpp" />
-    <ClInclude Include="Lua_Commands.hpp" />
-    <ClInclude Include="Lua_Manager.hpp" />
-    <ClInclude Include="Lua_Module.hpp" />
-    <ClInclude Include="Lua_Module_Manager.hpp" />
-    <ClInclude Include="Lua_Scripts_Manager.hpp" />
+    <ClInclude Include="src\render\blur.hpp" />
+    <ClInclude Include="src\api\FileSystemAPI.hpp" />
+    <ClInclude Include="src\api\ImGuiAPI.hpp" />
+    <ClInclude Include="src\api\LoggerAPI.hpp" />
+    <ClInclude Include="src\config\ConfigManager.hpp" />
+    <ClInclude Include="src\lua\Lua_Binding_Library.hpp" />
+    <ClInclude Include="src\lua\Lua_Commands.hpp" />
+    <ClInclude Include="src\lua\Lua_Manager.hpp" />
+    <ClInclude Include="src\lua\Lua_Module.hpp" />
+    <ClInclude Include="src\lua\Lua_Module_Manager.hpp" />
+    <ClInclude Include="src\lua\Lua_Scripts_Manager.hpp" />
     <ClInclude Include="segue_font.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\misc\debuggers\imgui.natvis" />
     <None Include="..\README.txt" />
+    <None Include="setting.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="scripts\imgui_example.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

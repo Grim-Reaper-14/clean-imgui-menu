@@ -53,7 +53,7 @@ extern float accent_color[3];
 extern ImFont* ico;
 extern ImFont* default_segu;
 
-#include "../examples/example_win32_directx9/blur.hpp"
+#include "blur.hpp"
 extern LPDIRECT3DDEVICE9 g_pd3dDevice;
 
 //-------------------------------------------------------------------------

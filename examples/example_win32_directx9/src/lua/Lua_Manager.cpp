@@ -1,5 +1,9 @@
 #include "Lua_Manager.hpp"
 
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
 // ---------------------------------------------------------------------------
 LuaManager& LuaManager::Instance()
 {
@@ -56,6 +60,7 @@ void LuaManager::Shutdown()
         return;
 
     m_moduleManager.Clear();
+    ClearRenderCallbacks();
     LuaBindingLibrary::Unregister(m_lua);
 
     // Destroy the sol::state (closes the underlying lua_State).
@@ -81,9 +86,59 @@ void LuaManager::ClearOutput()
 }
 
 // ---------------------------------------------------------------------------
+void LuaManager::SetRenderCallback(const std::string& name,
+                                   sol::protected_function callback)
+{
+    if (name.empty())
+        throw std::invalid_argument("Render callback name cannot be empty");
+    if (!callback.valid())
+        throw std::invalid_argument("Render callback must be a Lua function");
+
+    m_renderCallbacks[name] = std::move(callback);
+}
+
+// ---------------------------------------------------------------------------
+bool LuaManager::RemoveRenderCallback(const std::string& name)
+{
+    return m_renderCallbacks.erase(name) > 0;
+}
+
+// ---------------------------------------------------------------------------
+void LuaManager::ClearRenderCallbacks()
+{
+    m_renderCallbacks.clear();
+}
+
+// ---------------------------------------------------------------------------
+void LuaManager::RenderCallbacks()
+{
+    if (!m_initialized || m_renderCallbacks.empty())
+        return;
+
+    // Callbacks may add or remove callbacks, so iterate over a stable copy.
+    std::vector<std::pair<std::string, sol::protected_function>> callbacks;
+    callbacks.reserve(m_renderCallbacks.size());
+    for (const auto& callback : m_renderCallbacks)
+        callbacks.push_back(callback);
+
+    for (auto& callback : callbacks)
+    {
+        sol::protected_function_result result = callback.second();
+        if (!result.valid())
+        {
+            const sol::error error = result;
+            AppendOutput("[ERROR] ImGui callback '" + callback.first +
+                         "' disabled: " + error.what() + "\n");
+            m_renderCallbacks.erase(callback.first);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 void LuaManager::RefreshScripts()
 {
     m_moduleManager.Clear();
+    ClearRenderCallbacks();
     m_scriptsManager.ScanDirectory();
 
     for (const auto& path : m_scriptsManager.GetScriptFiles())

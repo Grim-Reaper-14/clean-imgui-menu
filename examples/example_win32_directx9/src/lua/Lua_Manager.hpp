@@ -4,6 +4,7 @@
 #include "Lua_Commands.hpp"
 #include "Lua_Binding_Library.hpp"  // pulls in sol.hpp
 #include <string>
+#include <unordered_map>
 
 // Top-level singleton that owns the sol::state and co-ordinates all Lua
 // subsystems.  Call LuaManager::Instance() to access it.
@@ -37,6 +38,13 @@ public:
     void               AppendOutput(const std::string& text);
     void               ClearOutput();
 
+    // Named Lua callbacks invoked once per ImGui frame.
+    void SetRenderCallback(const std::string& name,
+                           sol::protected_function callback);
+    bool RemoveRenderCallback(const std::string& name);
+    void ClearRenderCallbacks();
+    void RenderCallbacks();
+
     // Rescan the scripts directory and refresh loaded modules.
     void RefreshScripts();
 
@@ -52,4 +60,5 @@ private:
     LuaScriptsManager  m_scriptsManager;
     LuaCommands        m_commands;
     std::string        m_outputBuffer;
+    std::unordered_map<std::string, sol::protected_function> m_renderCallbacks;
 };

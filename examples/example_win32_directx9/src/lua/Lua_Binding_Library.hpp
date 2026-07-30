@@ -29,4 +29,10 @@ private:
     // utils.get_version()    -> string
     // utils.get_tick_count() -> integer (ms)
     static void RegisterUtilBindings(sol::state& lua);
+
+    // filesystem.* provides file, directory, and path helpers.
+    static void RegisterFileSystemBindings(sol::state& lua);
+
+    // logger.* writes timestamped messages to the UI, debugger, and log file.
+    static void RegisterLoggerBindings(sol::state& lua);
 };
