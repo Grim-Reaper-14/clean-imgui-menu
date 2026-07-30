@@ -157,6 +157,12 @@
     <ClCompile Include="..\..\backends\imgui_impl_dx9.cpp" />
     <ClCompile Include="..\..\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="blur.cpp" />
+    <ClCompile Include="Lua_Binding_Library.cpp" />
+    <ClCompile Include="Lua_Commands.cpp" />
+    <ClCompile Include="Lua_Manager.cpp" />
+    <ClCompile Include="Lua_Module.cpp" />
+    <ClCompile Include="Lua_Module_Manager.cpp" />
+    <ClCompile Include="Lua_Scripts_Manager.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +176,12 @@
     <ClInclude Include="blur_x.h" />
     <ClInclude Include="blur_y.h" />
     <ClInclude Include="ico_font.h" />
+    <ClInclude Include="Lua_Binding_Library.hpp" />
+    <ClInclude Include="Lua_Commands.hpp" />
+    <ClInclude Include="Lua_Manager.hpp" />
+    <ClInclude Include="Lua_Module.hpp" />
+    <ClInclude Include="Lua_Module_Manager.hpp" />
+    <ClInclude Include="Lua_Scripts_Manager.hpp" />
     <ClInclude Include="segue_font.h" />
   </ItemGroup>
   <ItemGroup>
