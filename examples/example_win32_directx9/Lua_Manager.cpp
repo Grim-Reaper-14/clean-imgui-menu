@@ -1,15 +1,5 @@
 #include "Lua_Manager.hpp"
 
-#ifdef LUA_VERSION_NUM
-// already included
-#else
-extern "C" {
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-}
-#endif
-
 // ---------------------------------------------------------------------------
 LuaManager& LuaManager::Instance()
 {
@@ -20,18 +10,14 @@ LuaManager& LuaManager::Instance()
 // ---------------------------------------------------------------------------
 bool LuaManager::Initialize(const std::string& scriptsDirectory)
 {
-    if (m_L)
+    if (m_initialized)
         Shutdown(); // re-initialize guard
 
-    m_L = luaL_newstate();
-    if (!m_L)
-    {
-        AppendOutput("[ERROR] Failed to create lua_State\n");
-        return false;
-    }
+    // sol::state default-constructs a fresh lua_State with no libraries open.
+    m_lua = sol::state{};
 
-    // Register all C bindings
-    LuaBindingLibrary::Register(m_L);
+    // Register all bindings (also calls lua.open_libraries internally)
+    LuaBindingLibrary::Register(m_lua);
 
     // Register built-in commands
     m_commands.RegisterBuiltins();
@@ -45,9 +31,11 @@ bool LuaManager::Initialize(const std::string& scriptsDirectory)
         m_moduleManager.AddModule(path);
 
     // Load (compile) all enabled modules
-    m_moduleManager.LoadAll(m_L);
+    m_moduleManager.LoadAll(m_lua.lua_state());
 
-    AppendOutput("[INFO] Lua system initialized\n");
+    m_initialized = true;
+
+    AppendOutput("[INFO] Lua (sol2) system initialized\n");
     AppendOutput("[INFO] Scripts directory: " + scriptsDirectory + "\n");
     AppendOutput("[INFO] Scripts found: " +
                  std::to_string(m_scriptsManager.GetScriptCount()) + "\n");
@@ -58,20 +46,21 @@ bool LuaManager::Initialize(const std::string& scriptsDirectory)
 void LuaManager::Update()
 {
     // Intentionally lightweight: execute only enabled, already-loaded modules.
-    // Call this each frame (or throttle via a timer) from the main loop.
-    m_moduleManager.ExecuteAll(m_L);
+    m_moduleManager.ExecuteAll(m_lua.lua_state());
 }
 
 // ---------------------------------------------------------------------------
 void LuaManager::Shutdown()
 {
-    if (!m_L)
+    if (!m_initialized)
         return;
 
     m_moduleManager.Clear();
-    LuaBindingLibrary::Unregister(m_L);
-    lua_close(m_L);
-    m_L = nullptr;
+    LuaBindingLibrary::Unregister(m_lua);
+
+    // Destroy the sol::state (closes the underlying lua_State).
+    m_lua = sol::state{};
+    m_initialized = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,8 +89,8 @@ void LuaManager::RefreshScripts()
     for (const auto& path : m_scriptsManager.GetScriptFiles())
         m_moduleManager.AddModule(path);
 
-    if (m_L)
-        m_moduleManager.LoadAll(m_L);
+    if (m_initialized)
+        m_moduleManager.LoadAll(m_lua.lua_state());
 
     AppendOutput("[INFO] Scripts refreshed. Found: " +
                  std::to_string(m_scriptsManager.GetScriptCount()) + "\n");

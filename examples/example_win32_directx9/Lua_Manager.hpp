@@ -2,19 +2,17 @@
 #include "Lua_Module_Manager.hpp"
 #include "Lua_Scripts_Manager.hpp"
 #include "Lua_Commands.hpp"
-#include "Lua_Binding_Library.hpp"
+#include "Lua_Binding_Library.hpp"  // pulls in sol.hpp
 #include <string>
 
-struct lua_State;
-
-// Top-level singleton that owns the lua_State and co-ordinates all Lua
+// Top-level singleton that owns the sol::state and co-ordinates all Lua
 // subsystems.  Call LuaManager::Instance() to access it.
 class LuaManager
 {
 public:
     static LuaManager& Instance();
 
-    // Open a new Lua state, register bindings, and scan the scripts directory.
+    // Open a new sol::state, register bindings, and scan the scripts directory.
     // Must be called before any other method.
     bool Initialize(const std::string& scriptsDirectory = "scripts");
 
@@ -25,10 +23,10 @@ public:
     void Shutdown();
 
     // True after Initialize() and before Shutdown().
-    bool IsInitialized() const { return m_L != nullptr; }
+    bool IsInitialized() const { return m_initialized; }
 
     // ---- subsystem accessors ----
-    lua_State*          GetState()          { return m_L; }
+    sol::state&         GetState()          { return m_lua; }
     LuaModuleManager&   GetModuleManager()  { return m_moduleManager; }
     LuaScriptsManager&  GetScriptsManager() { return m_scriptsManager; }
     LuaCommands&        GetCommands()       { return m_commands; }
@@ -48,7 +46,8 @@ private:
     LuaManager(const LuaManager&)            = delete;
     LuaManager& operator=(const LuaManager&) = delete;
 
-    lua_State*         m_L = nullptr;
+    sol::state         m_lua;
+    bool               m_initialized = false;
     LuaModuleManager   m_moduleManager;
     LuaScriptsManager  m_scriptsManager;
     LuaCommands        m_commands;

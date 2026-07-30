@@ -1,129 +1,100 @@
 #include "Lua_Binding_Library.hpp"
 #include "Lua_Manager.hpp"
 
-#ifdef LUA_VERSION_NUM
-// already included
-#else
-extern "C" {
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-}
-#endif
-
 // Accent color shared with main.cpp
 extern float accent_color[4];
 
 // ---------------------------------------------------------------------------
-// console.print(msg)
+// console
 // ---------------------------------------------------------------------------
-static int l_console_print(lua_State* L)
+void LuaBindingLibrary::RegisterConsoleBindings(sol::state& lua)
 {
-    const char* msg = luaL_checkstring(L, 1);
-    LuaManager::Instance().AppendOutput(std::string(msg) + "\n");
-    return 0;
-}
+    sol::table console = lua.create_named_table("console");
 
-// console.clear()
-static int l_console_clear(lua_State* L)
-{
-    (void)L;
-    LuaManager::Instance().ClearOutput();
-    return 0;
-}
+    console.set_function("print", [](const std::string& msg)
+    {
+        LuaManager::Instance().AppendOutput(msg + "\n");
+    });
 
-void LuaBindingLibrary::RegisterConsoleBindings(lua_State* L)
-{
-    luaL_Reg console_lib[] = {
-        { "print", l_console_print },
-        { "clear", l_console_clear },
-        { nullptr, nullptr }
-    };
-    luaL_newlib(L, console_lib);
-    lua_setglobal(L, "console");
+    console.set_function("clear", []()
+    {
+        LuaManager::Instance().ClearOutput();
+    });
 }
 
 // ---------------------------------------------------------------------------
-// menu.get_accent_color() -> r, g, b, a
-// menu.set_accent_color(r, g, b, a)
+// menu
 // ---------------------------------------------------------------------------
-static int l_menu_get_accent_color(lua_State* L)
+void LuaBindingLibrary::RegisterMenuBindings(sol::state& lua)
 {
-    lua_pushnumber(L, accent_color[0]);
-    lua_pushnumber(L, accent_color[1]);
-    lua_pushnumber(L, accent_color[2]);
-    lua_pushnumber(L, accent_color[3]);
-    return 4;
-}
+    sol::table menu = lua.create_named_table("menu");
 
-static int l_menu_set_accent_color(lua_State* L)
-{
-    accent_color[0] = (float)luaL_checknumber(L, 1);
-    accent_color[1] = (float)luaL_checknumber(L, 2);
-    accent_color[2] = (float)luaL_checknumber(L, 3);
-    accent_color[3] = (float)luaL_optnumber(L, 4, 1.0);
-    return 0;
-}
+    // Returns r, g, b, a as a table { r, g, b, a }
+    menu.set_function("get_accent_color", []() -> sol::table
+    {
+        sol::state_view view(LuaManager::Instance().GetState().lua_state());
+        sol::table t = view.create_table_with(
+            "r", accent_color[0],
+            "g", accent_color[1],
+            "b", accent_color[2],
+            "a", accent_color[3]);
+        return t;
+    });
 
-void LuaBindingLibrary::RegisterMenuBindings(lua_State* L)
-{
-    luaL_Reg menu_lib[] = {
-        { "get_accent_color", l_menu_get_accent_color },
-        { "set_accent_color", l_menu_set_accent_color },
-        { nullptr, nullptr }
-    };
-    luaL_newlib(L, menu_lib);
-    lua_setglobal(L, "menu");
+    menu.set_function("set_accent_color",
+        [](float r, float g, float b, sol::optional<float> a)
+        {
+            accent_color[0] = r;
+            accent_color[1] = g;
+            accent_color[2] = b;
+            accent_color[3] = a.value_or(1.0f);
+        });
 }
 
 // ---------------------------------------------------------------------------
-// utils.get_version()   -> string
-// utils.get_tick_count() -> integer (milliseconds)
+// utils
 // ---------------------------------------------------------------------------
-static int l_utils_get_version(lua_State* L)
+void LuaBindingLibrary::RegisterUtilBindings(sol::state& lua)
 {
-    lua_pushstring(L, "Evicted 1.0");
-    return 1;
-}
+    sol::table utils = lua.create_named_table("utils");
 
-static int l_utils_get_tick_count(lua_State* L)
-{
+    utils.set_function("get_version", []() -> std::string
+    {
+        return "Evicted 1.0";
+    });
+
+    utils.set_function("get_tick_count", []() -> unsigned long
+    {
 #if defined(_WIN32)
-    extern unsigned long __stdcall GetTickCount(void);
-    lua_pushinteger(L, (lua_Integer)GetTickCount());
+        return ::GetTickCount();
 #else
-    lua_pushinteger(L, 0);
+        return 0UL;
 #endif
-    return 1;
-}
-
-void LuaBindingLibrary::RegisterUtilBindings(lua_State* L)
-{
-    luaL_Reg utils_lib[] = {
-        { "get_version",    l_utils_get_version    },
-        { "get_tick_count", l_utils_get_tick_count },
-        { nullptr, nullptr }
-    };
-    luaL_newlib(L, utils_lib);
-    lua_setglobal(L, "utils");
+    });
 }
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
-void LuaBindingLibrary::Register(lua_State* L)
+void LuaBindingLibrary::Register(sol::state& lua)
 {
-    if (!L) return;
-    luaL_openlibs(L);
-    RegisterConsoleBindings(L);
-    RegisterMenuBindings(L);
-    RegisterUtilBindings(L);
+    lua.open_libraries(
+        sol::lib::base,
+        sol::lib::package,
+        sol::lib::string,
+        sol::lib::table,
+        sol::lib::math,
+        sol::lib::io,
+        sol::lib::os);
+
+    RegisterConsoleBindings(lua);
+    RegisterMenuBindings(lua);
+    RegisterUtilBindings(lua);
 }
 
-void LuaBindingLibrary::Unregister(lua_State* L)
+void LuaBindingLibrary::Unregister(sol::state& lua)
 {
-    if (!L) return;
-    lua_pushnil(L); lua_setglobal(L, "console");
-    lua_pushnil(L); lua_setglobal(L, "menu");
-    lua_pushnil(L); lua_setglobal(L, "utils");
+    lua["console"] = sol::nil;
+    lua["menu"]    = sol::nil;
+    lua["utils"]   = sol::nil;
 }

@@ -335,7 +335,7 @@ int main(int, char**)
                             lua.RefreshScripts();
                         ImGui::SameLine();
                         if (ImGui::Button("Reload All", ImVec2(150, 28)))
-                            modMgr.ReloadAll(lua.GetState());
+                            modMgr.ReloadAll(lua.GetState().lua_state());
                     } ImGui::EndChild();
 
                     // ---- right-top: script info / execution ----
@@ -363,7 +363,7 @@ int main(int, char**)
                             ImGui::TextColored(status_colors[si], "Status:  %s", status_labels[si]);
                             ImGui::Spacing();
                             if (ImGui::Button("Execute", ImVec2(150, 28)))
-                                const_cast<LuaModule&>(sel).Execute(lua.GetState());
+                                const_cast<LuaModule&>(sel).Execute(lua.GetState().lua_state());
                             ImGui::SameLine();
                             if (ImGui::Button("Stop", ImVec2(150, 28)))
                                 const_cast<LuaModule&>(sel).Unload();
@@ -391,7 +391,7 @@ int main(int, char**)
                         if (ImGui::InputText("##cmd", cmd_buf, sizeof(cmd_buf),
                                              ImGuiInputTextFlags_EnterReturnsTrue))
                         {
-                            std::string result = lua.GetCommands().ExecuteCommand(cmd_buf, lua.GetState());
+                            std::string result = lua.GetCommands().ExecuteCommand(cmd_buf, lua.GetState().lua_state());
                             if (result == "__CLEAR__")
                                 lua.ClearOutput();
                             else
