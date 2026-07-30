@@ -1,0 +1,10 @@
+{
+  "name": "clean-imgui-menu",
+  "version-string": "1.0.0",
+  "builtin-baseline": "9fc1fb02bf81f30c3b427df845c031b979e01bc1",
+  "dependencies": [
+    "dxsdk-d3dx",
+    "lua",
+    "sol2"
+  ]
+}
