@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "checkbox_0": false,
+  "checkbox_1": false,
+  "slider_integer": 50,
+  "slider_float": 0.000,
+  "background_color": [1.000, 1.000, 1.000, 1.000],
+  "accent_color": [0.745, 0.151, 0.151, 1.000],
+  "aimbot_mode": 0,
+  "input_text": "",
+  "aimbot_key": 0,
+  "aimbot_key_mode": 1
+}
