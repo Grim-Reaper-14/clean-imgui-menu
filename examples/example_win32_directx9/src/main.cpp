@@ -8,11 +8,14 @@
 #pragma comment(lib,"d3dx9.lib")
 
 #include <tchar.h>
+#include <array>
 #include <filesystem>
 #include <string>
 #include <system_error>
 
 #include "background_pic.h"
+#include "assets/Custom_Font_Loader.hpp"
+#include "assets/Image_Loader.hpp"
 #include "blur.hpp"
 #include "config/ConfigManager.hpp"
 
@@ -49,6 +52,49 @@ namespace
             module_path.resize(module_path.size() * 2);
         }
     }
+
+    struct SidebarTabDefinition
+    {
+        const char* imageStem;
+        const char* fallbackGlyph;
+        const char* label;
+    };
+
+    constexpr std::array<SidebarTabDefinition, 9> kSidebarTabs = {{
+        { "legitbot",   "P", "LegitBot" },
+        { "ragebot",    "N", "RageBot" },
+        { "antiaim",    "Q", "AntiAim" },
+        { "visuals",    "I", "Visuals" },
+        { "misc",       "O", "Misc" },
+        { "playerlist", "R", "PlayerList" },
+        { "skins",      "T", "Skins" },
+        { "lua",        "J", "Lua" },
+        { "config",     "S", "Config" }
+    }};
+
+    std::size_t ReloadSidebarIcons(ImageLoader& loader, std::string& status)
+    {
+        std::string error;
+        if (!loader.Refresh(error))
+        {
+            status = "Icon scan failed: " + error;
+            return 0;
+        }
+
+        loader.Clear();
+
+        std::size_t loadedCount = 0;
+        for (const SidebarTabDefinition& tab : kSidebarTabs)
+        {
+            if (loader.LoadByStem(tab.imageStem, tab.imageStem, error))
+                ++loadedCount;
+        }
+
+        status = "Loaded " + std::to_string(loadedCount) + " of " +
+            std::to_string(kSidebarTabs.size()) +
+            " sidebar icons. Missing files use embedded glyphs.";
+        return loadedCount;
+    }
 }
 
 float color_edit4[4] = { 1.00f, 1.00f, 1.00f, 1.000f };
@@ -62,6 +108,12 @@ static const std::string settings_path =
     (executable_directory / L"setting.json").string();
 static const std::string scripts_path =
     (executable_directory / L"scripts").string();
+static const std::filesystem::path fonts_path =
+    executable_directory / L"Fonts";
+static const std::filesystem::path images_path =
+    executable_directory / L"Images";
+static const std::filesystem::path icons_path =
+    images_path / L"Icons";
 
 static int select_count = 0;
 
@@ -116,26 +168,68 @@ int main(int, char**)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGuiContext& g = *GImGui;
-    io.Fonts->AddFontFromMemoryTTF(&seguoe, sizeof seguoe, 22, NULL, io.Fonts->GetGlyphRangesCyrillic());
 
-    default_segu = io.Fonts->AddFontFromMemoryTTF(&seguoe, sizeof seguoe, 22, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    ImFontConfig embedded_font_config;
+    embedded_font_config.FontDataOwnedByAtlas = false;
 
-    segu = io.Fonts->AddFontFromMemoryTTF(&seguoe, sizeof seguoe, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    io.Fonts->AddFontFromMemoryTTF(&seguoe, sizeof seguoe, 22, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
 
-    bold_segu = io.Fonts->AddFontFromMemoryTTF(&bold_segue, sizeof bold_segue, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    default_segu = io.Fonts->AddFontFromMemoryTTF(&seguoe, sizeof seguoe, 22, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
 
-    ico = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 24, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    segu = io.Fonts->AddFontFromMemoryTTF(&seguoe, sizeof seguoe, 40, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
 
-    ico_combo = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 19, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    bold_segu = io.Fonts->AddFontFromMemoryTTF(&bold_segue, sizeof bold_segue, 40, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
 
-    ico_button = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 25, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    ico = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 24, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
 
-    ico_grande = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    ico_combo = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 19, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
+
+    ico_button = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 25, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
+
+    ico_grande = io.Fonts->AddFontFromMemoryTTF(&icon, sizeof icon, 40, &embedded_font_config, io.Fonts->GetGlyphRangesCyrillic());
 
     ImGui::StyleColorsDark();
 
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
+
+    io.FontDefault = default_segu;
+
+    CustomFontLoader custom_font_loader(fonts_path);
+    custom_font_loader.SetDefaultFont(default_segu);
+
+    std::string font_status;
+    std::string asset_error;
+    if (custom_font_loader.Refresh(asset_error))
+    {
+        font_status = "Found " +
+            std::to_string(custom_font_loader.GetFonts().size()) +
+            " custom fonts.";
+    }
+    else
+    {
+        font_status = "Font scan failed: " + asset_error;
+    }
+
+    ImageLoader background_loader(g_pd3dDevice, images_path);
+    std::string background_status;
+    if (background_loader.Refresh(asset_error))
+    {
+        background_status = "Found " +
+            std::to_string(background_loader.GetImages().size()) +
+            " background images.";
+    }
+    else
+    {
+        background_status = "Image scan failed: " + asset_error;
+    }
+
+    ImageLoader sidebar_icon_loader(g_pd3dDevice, icons_path);
+    std::string icon_status;
+    ReloadSidebarIcons(sidebar_icon_loader, icon_status);
+
+    std::filesystem::path selected_font;
+    int custom_font_size = 22;
 
     std::string config_status =
         "No setting.json found beside the executable; using defaults.";
@@ -183,6 +277,15 @@ int main(int, char**)
         if (done)
             break;
 
+        if (custom_font_loader.HasPendingChange())
+        {
+            std::string apply_status;
+            if (custom_font_loader.ApplyPending(apply_status))
+                font_status = apply_status;
+            else
+                font_status = "Font apply failed: " + apply_status;
+        }
+
         DWORD window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBackground;
 
         ImGui_ImplDX9_NewFrame();
@@ -207,9 +310,31 @@ int main(int, char**)
                 DrawBackgroundBlur(pWindowDrawList, g_pd3dDevice);
 
 
-                if (scene == nullptr) D3DXCreateTextureFromFileInMemoryEx(g_pd3dDevice, &background, sizeof(background), 1920, 1080, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &scene);
+                if (scene == nullptr)
+                {
+                    D3DXCreateTextureFromFileInMemoryEx(
+                        g_pd3dDevice, &background, sizeof(background),
+                        1920, 1080, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN,
+                        D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0,
+                        NULL, NULL, &scene);
+                }
 
-                ImGui::GetBackgroundDrawList()->AddImage(scene, ImVec2(0, 0), ImVec2(1920, 1080), ImVec2(0, 0), ImVec2(1, 1), ImColor(color_edit4[0], color_edit4[1], color_edit4[2], color_edit4[3]));
+                IDirect3DTexture9* active_background =
+                    background_loader.GetTexture("background");
+                if (!active_background)
+                    active_background = scene;
+
+                if (active_background)
+                {
+                    ImGui::GetBackgroundDrawList()->AddImage(
+                        reinterpret_cast<ImTextureID>(active_background),
+                        ImVec2(0.0f, 0.0f),
+                        ImVec2(static_cast<float>(kMenuWidth),
+                               static_cast<float>(kMenuHeight)),
+                        ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                        ImColor(color_edit4[0], color_edit4[1],
+                                color_edit4[2], color_edit4[3]));
+                }
 
                 pBackgroundDrawList->AddRectFilled(ImVec2(0.000f + p.x, 0.000f + p.y), ImVec2(kMenuWidth + p.x, kMenuHeight + p.y), ImColor(9, 9, 9, 180), 10); // Background
 
@@ -239,48 +364,22 @@ int main(int, char**)
 
                     ImGui::SetCursorPosY(80);
 
-                    if (ImGui::TabButton("P", "LegitBot", ImVec2(190, 40)) && tab_count != 0) {
-                        tab_count = 0;
-                        active = true;
-                    }
-                    if (ImGui::TabButton("N", "RageBot", ImVec2(190, 40)) && tab_count != 1) {
-                        tab_count = 1;
-                        active = true;
-                    }
+                    for (std::size_t index = 0;
+                         index < kSidebarTabs.size(); ++index)
+                    {
+                        const SidebarTabDefinition& tab = kSidebarTabs[index];
+                        IDirect3DTexture9* icon_texture =
+                            sidebar_icon_loader.GetTexture(tab.imageStem);
 
-                    if (ImGui::TabButton("Q", "AntiAim", ImVec2(190, 40)) && tab_count != 2) {
-                        tab_count = 2;
-                        active = true;
-                    }
-
-                    if (ImGui::TabButton("I", "Visuals", ImVec2(190, 40)) && tab_count != 3) {
-                        tab_count = 3;
-                        active = true;
-                    }
-
-                    if (ImGui::TabButton("O", "Misc", ImVec2(190, 40)) && tab_count != 4) {
-                        tab_count = 4;
-                        active = true;
-                    }
-
-                    if (ImGui::TabButton("R", "PlayerList", ImVec2(190, 40)) && tab_count != 5) {
-                        tab_count = 5;
-                        active = true;
-                    }
-
-                    if (ImGui::TabButton("T", "Skins", ImVec2(190, 40)) && tab_count != 6) {
-                        tab_count = 6;
-                        active = true;
-                    }
-
-                    if (ImGui::TabButton("J", "Lua", ImVec2(190, 40)) && tab_count != 7) {
-                        tab_count = 7;
-                        active = true;
-                    }
-
-                    if (ImGui::TabButton("S", "Config", ImVec2(190, 40)) && tab_count != 8) {
-                        tab_count = 8;
-                        active = true;
+                        if (ImGui::TabButtonImage(
+                                reinterpret_cast<ImTextureID>(icon_texture),
+                                tab.fallbackGlyph, tab.label,
+                                ImVec2(190, 40)) &&
+                            tab_count != static_cast<int>(index))
+                        {
+                            tab_count = static_cast<int>(index);
+                            active = true;
+                        }
                     }
 
                 if (active) {
@@ -503,7 +602,7 @@ int main(int, char**)
 
                 case 8:
                 {
-                    ImGui::BeginChild("Configuration", ImVec2(339, 253), true); {
+                    ImGui::BeginChild("Configuration", ImVec2(339, 210), true); {
                         ImGui::Text("Configuration");
                         ImGui::Separator();
                         ImGui::Spacing();
@@ -543,8 +642,203 @@ int main(int, char**)
                         ImGui::TextDisabled("File: %s", settings_path.c_str());
                         ImGui::Spacing();
                         ImGui::TextWrapped("%s", config_status.c_str());
+                    } ImGui::EndChild();
 
-                    }ImGui::EndChild();
+                    ImGui::SetCursorPos(ImVec2(555, 88 - size_child));
+                    ImGui::BeginChild("CustomFonts", ImVec2(339, 210), true); {
+                        ImGui::Text("Custom Fonts");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        const auto& fonts = custom_font_loader.GetFonts();
+                        std::string font_preview = "Embedded Segoe UI";
+                        if (!selected_font.empty())
+                            font_preview = selected_font.filename().string();
+
+                        if (ImGui::BeginCombo("Font", font_preview.c_str()))
+                        {
+                            const bool embedded_selected =
+                                selected_font.empty();
+                            if (ImGui::Selectable(
+                                    "Embedded Segoe UI", embedded_selected))
+                            {
+                                selected_font.clear();
+                                custom_font_loader.QueueDefault();
+                                font_status =
+                                    "Embedded font queued for the next frame.";
+                            }
+
+                            for (int index = 0;
+                                 index < static_cast<int>(fonts.size()); ++index)
+                            {
+                                const std::string name =
+                                    fonts[index].filename().string();
+                                const bool selected =
+                                    selected_font == fonts[index];
+                                if (ImGui::Selectable(name.c_str(), selected))
+                                {
+                                    selected_font = fonts[index];
+                                    custom_font_loader.QueueFont(
+                                        selected_font,
+                                        static_cast<float>(custom_font_size));
+                                    font_status =
+                                        name + " queued for the next frame.";
+                                }
+                            }
+                            ImGui::EndCombo();
+                        }
+
+                        ImGui::SliderInt(
+                            "Size", &custom_font_size, 12, 36, "%d px");
+                        if (ImGui::IsItemDeactivatedAfterEdit() &&
+                            !selected_font.empty())
+                        {
+                            custom_font_loader.QueueFont(
+                                selected_font,
+                                static_cast<float>(custom_font_size));
+                        }
+
+                        if (ImGui::Button("Refresh Fonts", ImVec2(150, 28)))
+                        {
+                            std::string error;
+                            if (custom_font_loader.Refresh(error))
+                            {
+                                bool selected_font_exists =
+                                    selected_font.empty();
+                                for (const std::filesystem::path& font :
+                                     custom_font_loader.GetFonts())
+                                {
+                                    if (font == selected_font)
+                                    {
+                                        selected_font_exists = true;
+                                        break;
+                                    }
+                                }
+                                if (!selected_font_exists)
+                                    selected_font.clear();
+
+                                font_status = "Found " +
+                                    std::to_string(
+                                        custom_font_loader.GetFonts().size()) +
+                                    " custom fonts.";
+                            }
+                            else
+                            {
+                                font_status = "Font scan failed: " + error;
+                            }
+                        }
+
+                        ImGui::TextWrapped(
+                            "Folder: %s", fonts_path.string().c_str());
+                        ImGui::TextWrapped("%s", font_status.c_str());
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(203, 313 - size_child));
+                    ImGui::BeginChild(
+                        "BackgroundImages", ImVec2(339, 298), true); {
+                        ImGui::Text("Background Image");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        const auto& images = background_loader.GetImages();
+                        const ImageLoader::TextureInfo* active_image =
+                            background_loader.GetTextureInfo("background");
+                        const std::string image_preview = active_image
+                            ? active_image->source.filename().string()
+                            : "Built-in";
+
+                        if (ImGui::BeginCombo(
+                                "Background", image_preview.c_str()))
+                        {
+                            if (ImGui::Selectable(
+                                    "Built-in", active_image == nullptr))
+                            {
+                                background_loader.Unload("background");
+                                background_status =
+                                    "Applied the built-in background.";
+                            }
+
+                            for (const std::filesystem::path& image : images)
+                            {
+                                active_image =
+                                    background_loader.GetTextureInfo(
+                                        "background");
+                                const bool selected = active_image &&
+                                    active_image->source == image;
+                                const std::string name =
+                                    image.filename().string();
+
+                                if (ImGui::Selectable(name.c_str(), selected))
+                                {
+                                    std::string error;
+                                    if (background_loader.Load(
+                                            "background", image, error))
+                                    {
+                                        background_status =
+                                            "Applied " + name + ".";
+                                    }
+                                    else
+                                    {
+                                        background_status =
+                                            "Image load failed: " + error;
+                                    }
+                                }
+                            }
+                            ImGui::EndCombo();
+                        }
+
+                        if (ImGui::Button("Refresh Images", ImVec2(150, 28)))
+                        {
+                            std::string error;
+                            if (background_loader.Refresh(error))
+                            {
+                                background_status = "Found " +
+                                    std::to_string(
+                                        background_loader.GetImages().size()) +
+                                    " background images.";
+                            }
+                            else
+                            {
+                                background_status =
+                                    "Image scan failed: " + error;
+                            }
+                        }
+
+                        active_image =
+                            background_loader.GetTextureInfo("background");
+                        if (active_image)
+                        {
+                            ImGui::Text(
+                                "Size: %u x %u",
+                                active_image->width, active_image->height);
+                        }
+
+                        ImGui::TextWrapped(
+                            "Folder: %s", images_path.string().c_str());
+                        ImGui::TextWrapped(
+                            "%s", background_status.c_str());
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(555, 313 - size_child));
+                    ImGui::BeginChild(
+                        "SidebarIcons", ImVec2(339, 298), true); {
+                        ImGui::Text("Sidebar Icons");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        if (ImGui::Button("Refresh Icons", ImVec2(150, 28)))
+                            ReloadSidebarIcons(
+                                sidebar_icon_loader, icon_status);
+
+                        ImGui::Spacing();
+                        ImGui::TextWrapped(
+                            "Folder: %s", icons_path.string().c_str());
+                        ImGui::TextWrapped(
+                            "Names: legitbot, ragebot, antiaim, visuals, "
+                            "misc, playerlist, skins, lua, config");
+                        ImGui::Spacing();
+                        ImGui::TextWrapped("%s", icon_status.c_str());
+                    } ImGui::EndChild();
 
                     break;
                 }
@@ -572,6 +866,15 @@ int main(int, char**)
     }
 
     LuaManager::Instance().Shutdown();
+
+    background_loader.Clear();
+    sidebar_icon_loader.Clear();
+    if (scene)
+    {
+        scene->Release();
+        scene = nullptr;
+    }
+
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
