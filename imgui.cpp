@@ -5449,8 +5449,6 @@ bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, b
     child_window->ChildId = id;
     child_window->AutoFitChildAxises = (ImS8)auto_fit_axises;
 
-    const ImGuiStyle& style = g.Style;
-
     const ImVec2 pos = parent_window->DC.CursorPos;
 
     const ImRect check_bb(pos, pos);
@@ -5460,7 +5458,7 @@ bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, b
         const int vtx_idx_1 = GetWindowDrawList()->VtxBuffer.Size;
         RenderText(ImVec2(check_bb.Max.x + 20, check_bb.Min.y + 10), name);
         const int vtx_idx_2 = GetWindowDrawList()->VtxBuffer.Size;
-        ImGui::ShadeVertsLinearColorGradientKeepAlpha(GetWindowDrawList(), vtx_idx_1, vtx_idx_2, check_bb.Min + ImVec2(20, 0), check_bb.Max + ImVec2(size_arg.x - 20.000f, 20), ImColor(80, 80, 80, 255), ImColor(0, 0, 0, 225)); // ãðàäèåíò
+        ImGui::ShadeVertsLinearColorGradientKeepAlpha(GetWindowDrawList(), vtx_idx_1, vtx_idx_2, check_bb.Min + ImVec2(20, 0), check_bb.Max + ImVec2(size_arg.x - 20.000f, 20), ImColor(80, 80, 80, 255), ImColor(0, 0, 0, 225)); // Ã£Ã°Ã Ã¤Ã¨Ã¥Ã­Ã²
 
         parent_window->DrawList->AddRectFilledMultiColor(check_bb.Min + ImVec2(20.000f, 45.000f), check_bb.Max + ImVec2(size_arg.x - 20.000f, 46.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], accent_color[3]), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], accent_color[3]));
 
