@@ -1124,7 +1124,7 @@ bool ImGui::Button(const char* label, const ImVec2& size_arg)
 
 extern int tab_count;
 
-bool ImGui::TabButtonEx(const char* ico, const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
+bool ImGui::TabButtonEx(const char* ico, ImTextureID icon_texture, const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
 {
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems)
@@ -1195,20 +1195,38 @@ bool ImGui::TabButtonEx(const char* ico, const char* label, const ImVec2& size_a
     if (g.LogEnabled)
         LogSetNextTextDecoration("[", "]");
 
-    PushFont(ico_button);
-
     const int vtx_idx_1 = GetWindowDrawList()->VtxBuffer.Size;
 
     PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.45f));
-    RenderTextClipped(bb.Min + style.FramePadding + ImVec2(35, 0), bb.Max - style.FramePadding + ImVec2(30, 0), ico, NULL, &label_size, style.ButtonTextAlign, &bb);
-
-    PopFont();
+    if (icon_texture != nullptr)
+    {
+        const float icon_size = 20.0f;
+        const ImVec2 icon_min(
+            bb.Min.x + 35.0f,
+            bb.Min.y + (size.y - icon_size) * 0.5f);
+        window->DrawList->AddImage(
+            icon_texture,
+            icon_min,
+            icon_min + ImVec2(icon_size, icon_size),
+            ImVec2(0.0f, 0.0f),
+            ImVec2(1.0f, 1.0f),
+            ImColor(1.0f, 1.0f, 1.0f, style.Alpha));
+    }
+    else
+    {
+        PushFont(ico_button);
+        RenderTextClipped(
+            bb.Min + style.FramePadding + ImVec2(35, 0),
+            bb.Max - style.FramePadding + ImVec2(30, 0),
+            ico, NULL, &label_size, style.ButtonTextAlign, &bb);
+        PopFont();
+    }
 
     RenderTextClipped(bb.Min + style.FramePadding + ImVec2(65, 0), bb.Max - style.FramePadding + ImVec2(60, 0), label, NULL, &label_size, style.ButtonTextAlign, &bb);
     PopStyleVar(1);
 
     const int vtx_idx_2 = GetWindowDrawList()->VtxBuffer.Size;
-    ImGui::ShadeVertsLinearColorGradientKeepAlpha(GetWindowDrawList(), vtx_idx_1, vtx_idx_2, bb.Min + ImVec2(20, 0), bb.Max + ImVec2(bb.Min.x - bb.Min.x - 20, 20), ImColor(it_nameanim->second * 2, 0.40f, 0.40f, 1.00f), ImColor(0.05f, 0.05f, 0.05f, 1.00f)); // градиент
+    ImGui::ShadeVertsLinearColorGradientKeepAlpha(GetWindowDrawList(), vtx_idx_1, vtx_idx_2, bb.Min + ImVec2(20, 0), bb.Max + ImVec2(bb.Min.x - bb.Min.x - 20, 20), ImColor(it_nameanim->second * 2, 0.40f, 0.40f, 1.00f), ImColor(0.05f, 0.05f, 0.05f, 1.00f)); // ГЈГ°Г Г¤ГЁГҐГ­ГІ
 
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
     return pressed;
@@ -1216,7 +1234,18 @@ bool ImGui::TabButtonEx(const char* ico, const char* label, const ImVec2& size_a
 
 bool ImGui::TabButton(const char* ico, const char* label, const ImVec2& size_arg)
 {
-    return TabButtonEx(ico, label, size_arg, ImGuiButtonFlags_None);
+    return TabButtonEx(
+        ico, nullptr, label, size_arg, ImGuiButtonFlags_None);
+}
+
+bool ImGui::TabButtonImage(ImTextureID icon_texture,
+                           const char* fallback_ico,
+                           const char* label,
+                           const ImVec2& size_arg)
+{
+    return TabButtonEx(
+        fallback_ico, icon_texture, label, size_arg,
+        ImGuiButtonFlags_None);
 }
 
 
@@ -3601,7 +3630,7 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_dat
     RenderNavHighlight(frame_bb, id);
 
 
-    // Плавная анимация
+    // ГЏГ«Г ГўГ­Г Гї Г Г­ГЁГ¬Г Г¶ГЁГї
 
     static std::map<ImGuiID, slider_state> filing;
     auto it_filing = filing.find(id);
