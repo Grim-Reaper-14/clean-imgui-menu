@@ -49,6 +49,12 @@ public:
     void RefreshScripts();
 
 private:
+    friend class LuaModule;
+
+    void BeginScriptExecution(const std::string& scriptName);
+    void EndScriptExecution();
+    void RemoveRenderCallbacksForScript(const std::string& scriptName);
+
     LuaManager()  = default;
     ~LuaManager() = default;
     LuaManager(const LuaManager&)            = delete;
@@ -60,5 +66,7 @@ private:
     LuaScriptsManager  m_scriptsManager;
     LuaCommands        m_commands;
     std::string        m_outputBuffer;
+    std::string        m_activeScript;
     std::unordered_map<std::string, sol::protected_function> m_renderCallbacks;
+    std::unordered_map<std::string, std::string> m_renderCallbackOwners;
 };
