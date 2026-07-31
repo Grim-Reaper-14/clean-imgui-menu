@@ -33,6 +33,9 @@ Place icon files in:
 The loader matches file stems, so the extension may be any supported image
 format. Use these names:
 
+- self
+- weapons
+- teleport
 - legitbot
 - ragebot
 - antiaim
