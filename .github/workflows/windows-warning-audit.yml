@@ -1,9 +1,9 @@
 name: Windows C++20 warning audit
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/add-live-asset-loaders
+      - agent/fix-menu-finish-checks
   workflow_dispatch:
 
 permissions:
