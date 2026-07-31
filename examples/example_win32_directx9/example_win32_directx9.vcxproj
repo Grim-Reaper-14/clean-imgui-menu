@@ -160,6 +160,8 @@
     <ClCompile Include="src\api\FileSystemAPI.cpp" />
     <ClCompile Include="src\api\ImGuiAPI.cpp" />
     <ClCompile Include="src\api\LoggerAPI.cpp" />
+    <ClCompile Include="src\assets\Custom_Font_Loader.cpp" />
+    <ClCompile Include="src\assets\Image_Loader.cpp" />
     <ClCompile Include="src\config\ConfigManager.cpp" />
     <ClCompile Include="src\lua\Lua_Binding_Library.cpp" />
     <ClCompile Include="src\lua\Lua_Commands.cpp" />
@@ -184,6 +186,8 @@
     <ClInclude Include="src\api\FileSystemAPI.hpp" />
     <ClInclude Include="src\api\ImGuiAPI.hpp" />
     <ClInclude Include="src\api\LoggerAPI.hpp" />
+    <ClInclude Include="src\assets\Custom_Font_Loader.hpp" />
+    <ClInclude Include="src\assets\Image_Loader.hpp" />
     <ClInclude Include="src\config\ConfigManager.hpp" />
     <ClInclude Include="src\lua\Lua_Binding_Library.hpp" />
     <ClInclude Include="src\lua\Lua_Commands.hpp" />
@@ -196,6 +200,7 @@
   <ItemGroup>
     <None Include="..\..\misc\debuggers\imgui.natvis" />
     <None Include="..\README.txt" />
+    <None Include="..\..\ASSET_FOLDERS.md" />
     <None Include="setting.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -205,6 +210,9 @@
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CreateRuntimeAssetDirectories" AfterTargets="Build">
+    <MakeDir Directories="$(OutDir)Fonts;$(OutDir)Images;$(OutDir)Images\Icons" />
+  </Target>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
