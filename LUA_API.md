@@ -102,6 +102,10 @@ Render callback functions:
 - `remove_render_callback(name)`
 - `clear_render_callbacks()`
 
+Callbacks registered while a managed script is executing belong to that script.
+Stopping or reloading a script removes only its callbacks; callbacks from other
+scripts remain active.
+
 Callbacks render inline by default and should use widgets/layout functions
 directly. Standalone windows remain available for scripts that explicitly need
 them:

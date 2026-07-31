@@ -44,6 +44,27 @@ namespace
         return escaped;
     }
 
+    void ValidateJsonDocument(const std::string& json)
+    {
+        std::size_t first = 0;
+        while (first < json.size() &&
+               std::isspace(static_cast<unsigned char>(json[first])))
+        {
+            ++first;
+        }
+
+        std::size_t last = json.size();
+        while (last > first &&
+               std::isspace(static_cast<unsigned char>(json[last - 1])))
+        {
+            --last;
+        }
+
+        if (first == last || json[first] != '{' || json[last - 1] != '}')
+            throw std::runtime_error(
+                "Invalid JSON: settings must be a top-level object");
+    }
+
     std::size_t FindValue(const std::string& json, const char* key)
     {
         const std::string quotedKey = std::string("\"") + key + "\"";
@@ -217,6 +238,13 @@ bool ConfigManager::Load(const std::string& path,
     try
     {
         const std::string json = FileSystemAPI::ReadFile(path);
+        ValidateJsonDocument(json);
+
+        const int version = static_cast<int>(ReadNumber(json, "version"));
+        if (version != 1)
+            throw std::runtime_error(
+                "Unsupported settings version: " + std::to_string(version));
+
         MenuSettings loaded;
         loaded.checkbox0 = ReadBoolean(json, "checkbox_0");
         loaded.checkbox1 = ReadBoolean(json, "checkbox_1");

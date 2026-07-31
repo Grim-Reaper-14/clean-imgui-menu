@@ -1,4 +1,5 @@
 #include "Lua_Module.hpp"
+#include "Lua_Manager.hpp"
 
 // Lua 5.4 C API.  Add the Lua 5.4 SDK include path to the project properties
 // (e.g. C:\Lua54\include) and lua54.lib to the linker additional dependencies.
@@ -70,9 +71,16 @@ bool LuaModule::Execute(lua_State* L)
     if (!m_enabled)
         return true;
 
+    // Track which script owns every callback registered during this execution.
+    LuaManager& manager = LuaManager::Instance();
+    manager.BeginScriptExecution(m_name);
+
     // Load+execute in one step via luaL_dofile so the chunk runs fresh.
     m_status = LuaScriptStatus::Running;
-    int result = luaL_dofile(L, m_filePath.c_str());
+    const int result = luaL_dofile(L, m_filePath.c_str());
+
+    manager.EndScriptExecution();
+
     if (result != LUA_OK)
     {
         m_lastError = lua_tostring(L, -1);
@@ -98,6 +106,7 @@ bool LuaModule::Reload(lua_State* L)
 // ---------------------------------------------------------------------------
 void LuaModule::Unload()
 {
+    LuaManager::Instance().RemoveRenderCallbacksForScript(m_name);
     m_loaded = false;
     m_status = LuaScriptStatus::Stopped;
 }

@@ -8,7 +8,9 @@
 #pragma comment(lib,"d3dx9.lib")
 
 #include <tchar.h>
+#include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "background_pic.h"
 #include "blur.hpp"
@@ -19,12 +21,47 @@
 
 #include "Lua_Manager.hpp"
 
+namespace
+{
+    constexpr int kMenuWidth = 905;
+    constexpr int kMenuHeight = 624;
+    constexpr DWORD kWindowStyle = WS_POPUP;
+
+    std::filesystem::path GetExecutableDirectory()
+    {
+        std::wstring module_path(MAX_PATH, L'\0');
+
+        for (;;)
+        {
+            const DWORD length = ::GetModuleFileNameW(
+                nullptr, module_path.data(),
+                static_cast<DWORD>(module_path.size()));
+
+            if (length == 0)
+                return std::filesystem::current_path();
+
+            if (length < module_path.size())
+            {
+                module_path.resize(length);
+                return std::filesystem::path(module_path).parent_path();
+            }
+
+            module_path.resize(module_path.size() * 2);
+        }
+    }
+}
+
 float color_edit4[4] = { 1.00f, 1.00f, 1.00f, 1.000f };
 
 float accent_color[4] = { 0.745f, 0.151f, 0.151f, 1.000f };
 
 static MenuSettings menu_settings;
-static constexpr const char* settings_path = "setting.json";
+static const std::filesystem::path executable_directory =
+    GetExecutableDirectory();
+static const std::string settings_path =
+    (executable_directory / L"setting.json").string();
+static const std::string scripts_path =
+    (executable_directory / L"scripts").string();
 
 static int select_count = 0;
 
@@ -57,7 +94,13 @@ int main(int, char**)
 
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, L"ImGui Example", NULL };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX9 Example", WS_POPUP, 200, 200, 905, 624, NULL, NULL, wc.hInstance, NULL);
+    RECT window_rect = { 0, 0, kMenuWidth, kMenuHeight };
+    ::AdjustWindowRectEx(&window_rect, kWindowStyle, FALSE, 0);
+
+    HWND hwnd = ::CreateWindowW(
+        wc.lpszClassName, L"Dear ImGui DirectX9 Example", kWindowStyle,
+        200, 200, window_rect.right - window_rect.left,
+        window_rect.bottom - window_rect.top, NULL, NULL, wc.hInstance, NULL);
 
     if (!CreateDeviceD3D(hwnd))
     {
@@ -94,6 +137,32 @@ int main(int, char**)
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
+    std::string config_status =
+        "No setting.json found beside the executable; using defaults.";
+    std::error_code settings_error;
+    if (std::filesystem::exists(settings_path, settings_error))
+    {
+        std::string error;
+        if (ConfigManager::Load(settings_path, menu_settings,
+                color_edit4, accent_color, error))
+        {
+            config_status =
+                "Loaded setting.json automatically from beside the executable.";
+        }
+        else
+        {
+            config_status = "Automatic load failed: " + error;
+            const std::string debug_message = config_status + "\n";
+            ::OutputDebugStringA(debug_message.c_str());
+        }
+    }
+    else if (settings_error)
+    {
+        config_status =
+            "Automatic load failed: " + settings_error.message();
+        const std::string debug_message = config_status + "\n";
+        ::OutputDebugStringA(debug_message.c_str());
+    }
 
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -118,13 +187,13 @@ int main(int, char**)
 
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
-
-        ImGui::SetNextWindowPos(ImVec2(0, 0));
-
         ImGui::NewFrame();
         {
-
-            ImGui::SetNextWindowSize(ImVec2(905, 624));
+            ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
+            ImGui::SetNextWindowSize(
+                ImVec2(static_cast<float>(kMenuWidth),
+                       static_cast<float>(kMenuHeight)),
+                ImGuiCond_Always);
 
             ImGui::Begin("Hola!", &menu, window_flags);
             {
@@ -142,7 +211,7 @@ int main(int, char**)
 
                 ImGui::GetBackgroundDrawList()->AddImage(scene, ImVec2(0, 0), ImVec2(1920, 1080), ImVec2(0, 0), ImVec2(1, 1), ImColor(color_edit4[0], color_edit4[1], color_edit4[2], color_edit4[3]));
 
-                pBackgroundDrawList->AddRectFilled(ImVec2(0.000f + p.x, 0.000f + p.y), ImVec2(905 + p.x, 624 + p.y), ImColor(9, 9, 9, 180), 10); // Background
+                pBackgroundDrawList->AddRectFilled(ImVec2(0.000f + p.x, 0.000f + p.y), ImVec2(kMenuWidth + p.x, kMenuHeight + p.y), ImColor(9, 9, 9, 180), 10); // Background
 
                 pWindowDrawList->AddRectFilled(ImVec2(189.000f + p.x, 75.000f + p.y), ImVec2(903 + p.x, 76 + p.y), ImColor(25, 25, 25, 180), 10); // bar line
 
@@ -154,7 +223,7 @@ int main(int, char**)
 
                 if(ImGui::OptButton("B", ImVec2(30, 30), true));
 
-                pWindowDrawList->AddRectFilled(ImVec2(0.000f + p.x, 0.000f + p.y), ImVec2(190 + p.x, 624 + p.y), ImGui::GetColorU32(ImGuiCol_ChildBg), 10, ImDrawFlags_RoundCornersLeft); // bar line
+                pWindowDrawList->AddRectFilled(ImVec2(0.000f + p.x, 0.000f + p.y), ImVec2(190 + p.x, kMenuHeight + p.y), ImGui::GetColorU32(ImGuiCol_ChildBg), 10, ImDrawFlags_RoundCornersLeft); // bar line
 
                     const int vtx_idx_1 = pWindowDrawList->VtxBuffer.Size;
 
@@ -413,7 +482,7 @@ int main(int, char**)
                         if (ImGui::Button("Initialize Lua", ImVec2(150, 28)))
                         {
                             if (!lua.IsInitialized())
-                                lua.Initialize("scripts");
+                                lua.Initialize(scripts_path);
                         }
                         ImGui::SameLine();
                         if (ImGui::Button("Shutdown Lua", ImVec2(150, 28)))
@@ -434,9 +503,6 @@ int main(int, char**)
 
                 case 8:
                 {
-                    static std::string config_status =
-                        "Save or load your current menu settings.";
-
                     ImGui::BeginChild("Configuration", ImVec2(339, 253), true); {
                         ImGui::Text("Configuration");
                         ImGui::Separator();
@@ -449,7 +515,7 @@ int main(int, char**)
                                     color_edit4, accent_color, error))
                             {
                                 config_status =
-                                    "Saved successfully to setting.json";
+                                    "Saved setting.json beside the executable.";
                             }
                             else
                             {
@@ -465,7 +531,7 @@ int main(int, char**)
                                     color_edit4, accent_color, error))
                             {
                                 config_status =
-                                    "Loaded successfully from setting.json";
+                                    "Loaded setting.json from beside the executable.";
                             }
                             else
                             {
@@ -474,7 +540,7 @@ int main(int, char**)
                         }
 
                         ImGui::Spacing();
-                        ImGui::TextDisabled("File: %s", settings_path);
+                        ImGui::TextDisabled("File: %s", settings_path.c_str());
                         ImGui::Spacing();
                         ImGui::TextWrapped("%s", config_status.c_str());
 
@@ -527,6 +593,19 @@ bool CreateDeviceD3D(HWND hWnd)
     g_d3dpp.Windowed = TRUE;
     g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
     g_d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+
+    RECT client_rect = {};
+    if (::GetClientRect(hWnd, &client_rect))
+    {
+        g_d3dpp.BackBufferWidth = client_rect.right - client_rect.left;
+        g_d3dpp.BackBufferHeight = client_rect.bottom - client_rect.top;
+    }
+    else
+    {
+        g_d3dpp.BackBufferWidth = kMenuWidth;
+        g_d3dpp.BackBufferHeight = kMenuHeight;
+    }
+
     g_d3dpp.EnableAutoDepthStencil = TRUE;
     g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
     g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
