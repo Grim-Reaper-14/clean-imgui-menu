@@ -16,14 +16,23 @@ namespace
         if (path.empty())
             throw std::invalid_argument("Filesystem path cannot be empty");
 
-        return fs::path(reinterpret_cast<const char8_t*>(path.data()),
-                        reinterpret_cast<const char8_t*>(path.data() + path.size()));
+        std::u8string utf8Path;
+        utf8Path.reserve(path.size());
+        for (const char byte : path)
+        {
+            utf8Path.push_back(
+                static_cast<char8_t>(static_cast<unsigned char>(byte)));
+        }
+
+        return fs::path(utf8Path);
     }
 
     std::string ToUtf8(const fs::path& path)
     {
-        const auto u8str = path.u8string();
-        return std::string(reinterpret_cast<const char*>(u8str.data()), u8str.size());
+        const std::u8string utf8Path = path.u8string();
+        return std::string(
+            reinterpret_cast<const char*>(utf8Path.data()),
+            utf8Path.size());
     }
 
     [[noreturn]] void ThrowFileError(const char* operation, const fs::path& path,
