@@ -121,7 +121,7 @@ bool active = false;
 
 float size_child = 0;
 
-bool menu = false;
+bool menu_visible = true;
 ImFont* ico = nullptr;
 ImFont* ico_combo = nullptr;
 ImFont* ico_button = nullptr;
@@ -263,6 +263,7 @@ int main(int, char**)
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
+    bool f5_was_down = false;
     while (!done)
     {
 
@@ -276,6 +277,27 @@ int main(int, char**)
         }
         if (done)
             break;
+
+        const bool f5_is_down =
+            (::GetAsyncKeyState(VK_F5) & 0x8000) != 0;
+        if (f5_is_down && !f5_was_down)
+        {
+            menu_visible = !menu_visible;
+            ::ShowWindow(hwnd, menu_visible ? SW_SHOW : SW_HIDE);
+
+            if (menu_visible)
+            {
+                ::SetForegroundWindow(hwnd);
+                ::SetFocus(hwnd);
+            }
+        }
+        f5_was_down = f5_is_down;
+
+        if (!menu_visible)
+        {
+            ::Sleep(10);
+            continue;
+        }
 
         if (custom_font_loader.HasPendingChange())
         {
@@ -298,7 +320,7 @@ int main(int, char**)
                        static_cast<float>(kMenuHeight)),
                 ImGuiCond_Always);
 
-            ImGui::Begin("Hola!", &menu, window_flags);
+            ImGui::Begin("Hola!", nullptr, window_flags);
             {
                 ImVec2 P1, P2;
                 ImDrawList* pDrawList;
