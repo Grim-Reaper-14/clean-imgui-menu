@@ -13,6 +13,9 @@
     <Filter Include="src\config">
       <UniqueIdentifier>{9c963073-4508-4e5c-876b-d390a26799a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\math">
+      <UniqueIdentifier>{a1e240f8-c9b1-4a24-9f32-6f96a831df82}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\assets">
       <UniqueIdentifier>{be19d17a-7556-4a47-904e-c1fd1fd84ad1}</UniqueIdentifier>
     </Filter>
@@ -118,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="src\config\ConfigManager.hpp">
       <Filter>src\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math\Vec3.hpp">
+      <Filter>src\math</Filter>
     </ClInclude>
     <ClInclude Include="src\lua\Lua_Binding_Library.hpp">
       <Filter>src\lua</Filter>
