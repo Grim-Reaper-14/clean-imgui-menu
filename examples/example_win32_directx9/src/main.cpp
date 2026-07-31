@@ -18,6 +18,7 @@
 #include "assets/Image_Loader.hpp"
 #include "blur.hpp"
 #include "config/ConfigManager.hpp"
+#include "math/Vec3.hpp"
 
 #include "segue_font.h"
 #include "ico_font.h"
@@ -100,8 +101,8 @@ namespace
 
     struct TeleportMenuUiState
     {
-        std::array<float, 3> target = { 0.0f, 0.0f, 0.0f };
-        std::array<float, 3> savedTarget = { 0.0f, 0.0f, 0.0f };
+        Vec3 target;
+        Vec3 savedTarget;
         bool hasSavedTarget = false;
         std::string status = "No coordinate target saved.";
     };
@@ -603,7 +604,7 @@ int main(int, char**)
 
                         ImGui::InputFloat3(
                             "Target XYZ",
-                            teleport_menu_state.target.data(),
+                            teleport_menu_state.target.Data(),
                             "%.2f");
 
                         if (ImGui::Button(
@@ -628,9 +629,9 @@ int main(int, char**)
                         {
                             ImGui::Text(
                                 "X %.2f  Y %.2f  Z %.2f",
-                                teleport_menu_state.savedTarget[0],
-                                teleport_menu_state.savedTarget[1],
-                                teleport_menu_state.savedTarget[2]);
+                                teleport_menu_state.savedTarget.x,
+                                teleport_menu_state.savedTarget.y,
+                                teleport_menu_state.savedTarget.z);
 
                             if (ImGui::Button(
                                     "Load Saved", ImVec2(145, 28)))
