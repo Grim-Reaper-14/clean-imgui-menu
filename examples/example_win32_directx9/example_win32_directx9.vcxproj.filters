@@ -13,6 +13,9 @@
     <Filter Include="src\config">
       <UniqueIdentifier>{9c963073-4508-4e5c-876b-d390a26799a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\assets">
+      <UniqueIdentifier>{be19d17a-7556-4a47-904e-c1fd1fd84ad1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\render">
       <UniqueIdentifier>{e373eeaa-8043-4815-beb7-cccfad3d4628}</UniqueIdentifier>
     </Filter>
@@ -41,6 +44,12 @@
     </ClCompile>
     <ClCompile Include="src\api\LoggerAPI.cpp">
       <Filter>src\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\assets\Custom_Font_Loader.cpp">
+      <Filter>src\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\assets\Image_Loader.cpp">
+      <Filter>src\assets</Filter>
     </ClCompile>
     <ClCompile Include="src\config\ConfigManager.cpp">
       <Filter>src\config</Filter>
@@ -100,6 +109,12 @@
     </ClInclude>
     <ClInclude Include="src\api\LoggerAPI.hpp">
       <Filter>src\api</Filter>
+    </ClInclude>
+    <ClInclude Include="src\assets\Custom_Font_Loader.hpp">
+      <Filter>src\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\assets\Image_Loader.hpp">
+      <Filter>src\assets</Filter>
     </ClInclude>
     <ClInclude Include="src\config\ConfigManager.hpp">
       <Filter>src\config</Filter>
@@ -161,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.txt" />
+    <None Include="..\..\ASSET_FOLDERS.md" />
     <None Include="..\..\misc\debuggers\imgui.natvis">
       <Filter>imgui</Filter>
     </None>
