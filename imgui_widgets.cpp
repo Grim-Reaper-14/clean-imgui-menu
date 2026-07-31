@@ -1122,9 +1122,7 @@ bool ImGui::Button(const char* label, const ImVec2& size_arg)
     return ButtonEx(label, size_arg, ImGuiButtonFlags_None);
 }
 
-extern int tab_count;
-
-bool ImGui::TabButtonEx(const char* ico, ImTextureID icon_texture, const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
+bool ImGui::TabButtonEx(const char* ico, ImTextureID icon_texture, const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags, bool selected)
 {
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems)
@@ -1174,23 +1172,20 @@ bool ImGui::TabButtonEx(const char* ico, ImTextureID icon_texture, const char* l
 
     if (gradient_line <= 190) gradient_line += 0.4f / ImGui::GetIO().Framerate * 60.f;
 
-    if (tab_count == 0 && label == "LegitBot") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 1 && label == "RageBot") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 2 && label == "AntiAim") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 3 && label == "Visuals") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 4 && label == "Misc") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 5 && label == "PlayerList") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 6 && label == "Skins") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 7 && label == "Lua") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
-
-    if (tab_count == 8 && label == "Config") window->DrawList->AddRectFilledMultiColor(ImVec2(0.000f + pos.x, 0.000f + pos.y), ImVec2(gradient_line + pos.x, 40 + pos.y), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.000f), ImColor(accent_color[0], accent_color[1], accent_color[2], 0.100f));
+    if (selected)
+    {
+        window->DrawList->AddRectFilledMultiColor(
+            bb.Min,
+            ImVec2(bb.Min.x + gradient_line, bb.Max.y),
+            ImColor(accent_color[0], accent_color[1],
+                    accent_color[2], 0.100f),
+            ImColor(accent_color[0], accent_color[1],
+                    accent_color[2], 0.000f),
+            ImColor(accent_color[0], accent_color[1],
+                    accent_color[2], 0.000f),
+            ImColor(accent_color[0], accent_color[1],
+                    accent_color[2], 0.100f));
+    }
 
     if (g.LogEnabled)
         LogSetNextTextDecoration("[", "]");
@@ -1232,20 +1227,23 @@ bool ImGui::TabButtonEx(const char* ico, ImTextureID icon_texture, const char* l
     return pressed;
 }
 
-bool ImGui::TabButton(const char* ico, const char* label, const ImVec2& size_arg)
+bool ImGui::TabButton(const char* ico, const char* label,
+                      const ImVec2& size_arg, bool selected)
 {
     return TabButtonEx(
-        ico, nullptr, label, size_arg, ImGuiButtonFlags_None);
+        ico, nullptr, label, size_arg, ImGuiButtonFlags_None,
+        selected);
 }
 
 bool ImGui::TabButtonImage(ImTextureID icon_texture,
                            const char* fallback_ico,
                            const char* label,
-                           const ImVec2& size_arg)
+                           const ImVec2& size_arg,
+                           bool selected)
 {
     return TabButtonEx(
         fallback_ico, icon_texture, label, size_arg,
-        ImGuiButtonFlags_None);
+        ImGuiButtonFlags_None, selected);
 }
 
 
