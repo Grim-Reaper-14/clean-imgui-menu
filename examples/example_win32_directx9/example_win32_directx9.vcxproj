@@ -189,6 +189,7 @@
     <ClInclude Include="src\assets\Custom_Font_Loader.hpp" />
     <ClInclude Include="src\assets\Image_Loader.hpp" />
     <ClInclude Include="src\config\ConfigManager.hpp" />
+    <ClInclude Include="src\math\Vec3.hpp" />
     <ClInclude Include="src\lua\Lua_Binding_Library.hpp" />
     <ClInclude Include="src\lua\Lua_Commands.hpp" />
     <ClInclude Include="src\lua\Lua_Manager.hpp" />
