@@ -95,18 +95,52 @@ void LuaManager::SetRenderCallback(const std::string& name,
         throw std::invalid_argument("Render callback must be a Lua function");
 
     m_renderCallbacks[name] = std::move(callback);
+    m_renderCallbackOwners[name] = m_activeScript;
 }
 
 // ---------------------------------------------------------------------------
 bool LuaManager::RemoveRenderCallback(const std::string& name)
 {
-    return m_renderCallbacks.erase(name) > 0;
+    const bool removed = m_renderCallbacks.erase(name) > 0;
+    m_renderCallbackOwners.erase(name);
+    return removed;
 }
 
 // ---------------------------------------------------------------------------
 void LuaManager::ClearRenderCallbacks()
 {
     m_renderCallbacks.clear();
+    m_renderCallbackOwners.clear();
+}
+
+// ---------------------------------------------------------------------------
+void LuaManager::BeginScriptExecution(const std::string& scriptName)
+{
+    m_activeScript = scriptName;
+}
+
+// ---------------------------------------------------------------------------
+void LuaManager::EndScriptExecution()
+{
+    m_activeScript.clear();
+}
+
+// ---------------------------------------------------------------------------
+void LuaManager::RemoveRenderCallbacksForScript(const std::string& scriptName)
+{
+    for (auto owner = m_renderCallbackOwners.begin();
+         owner != m_renderCallbackOwners.end();)
+    {
+        if (owner->second == scriptName)
+        {
+            m_renderCallbacks.erase(owner->first);
+            owner = m_renderCallbackOwners.erase(owner);
+        }
+        else
+        {
+            ++owner;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -130,6 +164,7 @@ void LuaManager::RenderCallbacks()
             AppendOutput("[ERROR] ImGui callback '" + callback.first +
                          "' disabled: " + error.what() + "\n");
             m_renderCallbacks.erase(callback.first);
+            m_renderCallbackOwners.erase(callback.first);
         }
     }
 }
