@@ -53,6 +53,25 @@ namespace
         }
     }
 
+    enum SidebarTabIndex
+    {
+        kSelfTab = 0,
+        kWeaponsTab,
+        kTeleportTab,
+        kLegitBotTab,
+        kRageBotTab,
+        kAntiAimTab,
+        kVisualsTab,
+        kMiscTab,
+        kPlayerListTab,
+        kSkinsTab,
+        kLuaTab,
+        kConfigTab,
+        kSidebarTabCount
+    };
+
+    constexpr float kSidebarTabHeight = 36.0f;
+
     struct SidebarTabDefinition
     {
         const char* imageStem;
@@ -60,7 +79,38 @@ namespace
         const char* label;
     };
 
-    constexpr std::array<SidebarTabDefinition, 9> kSidebarTabs = {{
+    struct SelfMenuUiState
+    {
+        bool godMode = false;
+        bool neverWanted = false;
+        bool invisible = false;
+        bool noRagdoll = false;
+        float runSpeed = 1.0f;
+    };
+
+    struct WeaponsMenuUiState
+    {
+        bool infiniteAmmo = false;
+        bool noReload = false;
+        bool noRecoil = false;
+        bool noSpread = false;
+        float damageMultiplier = 1.0f;
+        float fireRateMultiplier = 1.0f;
+    };
+
+    struct TeleportMenuUiState
+    {
+        std::array<float, 3> target = { 0.0f, 0.0f, 0.0f };
+        std::array<float, 3> savedTarget = { 0.0f, 0.0f, 0.0f };
+        bool hasSavedTarget = false;
+        std::string status = "No coordinate target saved.";
+    };
+
+    constexpr std::array<SidebarTabDefinition, kSidebarTabCount>
+        kSidebarTabs = {{
+        { "self",       "A", "Self" },
+        { "weapons",    "E", "Weapons" },
+        { "teleport",   "D", "Teleport" },
         { "legitbot",   "P", "LegitBot" },
         { "ragebot",    "N", "RageBot" },
         { "antiaim",    "Q", "AntiAim" },
@@ -102,6 +152,9 @@ float color_edit4[4] = { 1.00f, 1.00f, 1.00f, 1.000f };
 float accent_color[4] = { 0.745f, 0.151f, 0.151f, 1.000f };
 
 static MenuSettings menu_settings;
+static SelfMenuUiState self_menu_state;
+static WeaponsMenuUiState weapons_menu_state;
+static TeleportMenuUiState teleport_menu_state;
 static const std::filesystem::path executable_directory =
     GetExecutableDirectory();
 static const std::string settings_path =
@@ -386,23 +439,34 @@ int main(int, char**)
 
                     ImGui::SetCursorPosY(80);
 
+                    const ImVec2 sidebar_spacing =
+                        ImGui::GetStyle().ItemSpacing;
+                    ImGui::PushStyleVar(
+                        ImGuiStyleVar_ItemSpacing,
+                        ImVec2(sidebar_spacing.x, 0.0f));
+
                     for (std::size_t index = 0;
                          index < kSidebarTabs.size(); ++index)
                     {
                         const SidebarTabDefinition& tab = kSidebarTabs[index];
                         IDirect3DTexture9* icon_texture =
                             sidebar_icon_loader.GetTexture(tab.imageStem);
+                        const bool selected =
+                            tab_count == static_cast<int>(index);
 
                         if (ImGui::TabButtonImage(
                                 reinterpret_cast<ImTextureID>(icon_texture),
                                 tab.fallbackGlyph, tab.label,
-                                ImVec2(190, 40)) &&
-                            tab_count != static_cast<int>(index))
+                                ImVec2(190.0f, kSidebarTabHeight),
+                                selected) &&
+                            !selected)
                         {
                             tab_count = static_cast<int>(index);
                             active = true;
                         }
                     }
+
+                    ImGui::PopStyleVar();
 
                 if (active) {
                     if (size_child <= 10) size_child += 1 / ImGui::GetIO().Framerate * 60.f;
@@ -434,7 +498,183 @@ int main(int, char**)
 
                 switch (tabs) {
 
-                case 0:
+                case kSelfTab:
+                {
+                    ImGui::BeginChild(
+                        "SelfOptions", ImVec2(339, 253), true); {
+                        ImGui::Text("Self Options");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        ImGui::Checkbox(
+                            "God Mode", &self_menu_state.godMode);
+                        ImGui::Checkbox(
+                            "Never Wanted", &self_menu_state.neverWanted);
+                        ImGui::Checkbox(
+                            "Invisible", &self_menu_state.invisible);
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(555, 88 - size_child));
+                    ImGui::BeginChild(
+                        "SelfMovement", ImVec2(339, 210), true); {
+                        ImGui::Text("Movement");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        ImGui::Checkbox(
+                            "No Ragdoll", &self_menu_state.noRagdoll);
+                        ImGui::SliderFloat(
+                            "Run Speed", &self_menu_state.runSpeed,
+                            1.0f, 5.0f, "%.1fx");
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(203, 353 - size_child));
+                    ImGui::BeginChild(
+                        "SelfBinding", ImVec2(691, 258), true); {
+                        ImGui::Text("Backend Binding");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                        ImGui::TextWrapped(
+                            "The Self controls keep live UI state now. "
+                            "Connect them to the project backend when the "
+                            "actual feature handlers are added.");
+                    } ImGui::EndChild();
+
+                    break;
+                }
+
+                case kWeaponsTab:
+                {
+                    ImGui::BeginChild(
+                        "WeaponOptions", ImVec2(339, 253), true); {
+                        ImGui::Text("Weapon Options");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        ImGui::Checkbox(
+                            "Infinite Ammo",
+                            &weapons_menu_state.infiniteAmmo);
+                        ImGui::Checkbox(
+                            "No Reload", &weapons_menu_state.noReload);
+                        ImGui::Checkbox(
+                            "No Recoil", &weapons_menu_state.noRecoil);
+                        ImGui::Checkbox(
+                            "No Spread", &weapons_menu_state.noSpread);
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(555, 88 - size_child));
+                    ImGui::BeginChild(
+                        "WeaponTuning", ImVec2(339, 210), true); {
+                        ImGui::Text("Weapon Tuning");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        ImGui::SliderFloat(
+                            "Damage", &weapons_menu_state.damageMultiplier,
+                            1.0f, 10.0f, "%.1fx");
+                        ImGui::SliderFloat(
+                            "Fire Rate",
+                            &weapons_menu_state.fireRateMultiplier,
+                            0.25f, 5.0f, "%.2fx");
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(203, 353 - size_child));
+                    ImGui::BeginChild(
+                        "WeaponBinding", ImVec2(691, 258), true); {
+                        ImGui::Text("Backend Binding");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                        ImGui::TextWrapped(
+                            "The Weapons controls keep live UI state now. "
+                            "Their values are ready to be read by weapon "
+                            "feature handlers later.");
+                    } ImGui::EndChild();
+
+                    break;
+                }
+
+                case kTeleportTab:
+                {
+                    ImGui::BeginChild(
+                        "TeleportTarget", ImVec2(339, 253), true); {
+                        ImGui::Text("Teleport Target");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        ImGui::InputFloat3(
+                            "Target XYZ",
+                            teleport_menu_state.target.data(),
+                            "%.2f");
+
+                        if (ImGui::Button(
+                                "Save Target", ImVec2(145, 28)))
+                        {
+                            teleport_menu_state.savedTarget =
+                                teleport_menu_state.target;
+                            teleport_menu_state.hasSavedTarget = true;
+                            teleport_menu_state.status =
+                                "Coordinate target saved.";
+                        }
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(555, 88 - size_child));
+                    ImGui::BeginChild(
+                        "TeleportSaved", ImVec2(339, 210), true); {
+                        ImGui::Text("Saved Target");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        if (teleport_menu_state.hasSavedTarget)
+                        {
+                            ImGui::Text(
+                                "X %.2f  Y %.2f  Z %.2f",
+                                teleport_menu_state.savedTarget[0],
+                                teleport_menu_state.savedTarget[1],
+                                teleport_menu_state.savedTarget[2]);
+
+                            if (ImGui::Button(
+                                    "Load Saved", ImVec2(145, 28)))
+                            {
+                                teleport_menu_state.target =
+                                    teleport_menu_state.savedTarget;
+                                teleport_menu_state.status =
+                                    "Saved coordinates loaded.";
+                            }
+
+                            ImGui::SameLine();
+                            if (ImGui::Button(
+                                    "Clear", ImVec2(145, 28)))
+                            {
+                                teleport_menu_state.hasSavedTarget = false;
+                                teleport_menu_state.status =
+                                    "Saved coordinates cleared.";
+                            }
+                        }
+                        else
+                        {
+                            ImGui::TextDisabled(
+                                "Save a coordinate target first.");
+                        }
+                    } ImGui::EndChild();
+
+                    ImGui::SetCursorPos(ImVec2(203, 353 - size_child));
+                    ImGui::BeginChild(
+                        "TeleportBinding", ImVec2(691, 258), true); {
+                        ImGui::Text("Teleport Status");
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                        ImGui::TextWrapped(
+                            "%s", teleport_menu_state.status.c_str());
+                        ImGui::Spacing();
+                        ImGui::TextDisabled(
+                            "Coordinate storage works now; connect the "
+                            "world-teleport handler in the backend later.");
+                    } ImGui::EndChild();
+
+                    break;
+                }
+
+                case kLegitBotTab:
 
                     ImGui::BeginChild("Editor", ImVec2(339, 253), true); {
 
@@ -485,7 +725,7 @@ int main(int, char**)
 
                     break;
 
-                case 7:
+                case kLuaTab:
                 {
                     LuaManager& lua      = LuaManager::Instance();
                     auto& modMgr         = lua.GetModuleManager();
@@ -622,7 +862,7 @@ int main(int, char**)
                     break;
                 }
 
-                case 8:
+                case kConfigTab:
                 {
                     ImGui::BeginChild("Configuration", ImVec2(339, 210), true); {
                         ImGui::Text("Configuration");
@@ -856,8 +1096,9 @@ int main(int, char**)
                         ImGui::TextWrapped(
                             "Folder: %s", icons_path.string().c_str());
                         ImGui::TextWrapped(
-                            "Names: legitbot, ragebot, antiaim, visuals, "
-                            "misc, playerlist, skins, lua, config");
+                            "Names: self, weapons, teleport, legitbot, "
+                            "ragebot, antiaim, visuals, misc, playerlist, "
+                            "skins, lua, config");
                         ImGui::Spacing();
                         ImGui::TextWrapped("%s", icon_status.c_str());
                     } ImGui::EndChild();
