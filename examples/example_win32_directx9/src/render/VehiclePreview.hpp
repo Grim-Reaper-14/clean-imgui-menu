@@ -7,7 +7,6 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <utility>
 
 struct VehiclePreviewTexture
 {
@@ -59,5 +58,3 @@ private:
     std::unordered_map<std::string, CacheEntry> cache_;
     std::string lastError_;
 };
-
-#include "VehiclePreview.inl"
