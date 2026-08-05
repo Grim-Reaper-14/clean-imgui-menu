@@ -1,172 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="src">
-      <UniqueIdentifier>{4fc737f1-c7a5-4376-a066-2a32d752a2ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\api">
-      <UniqueIdentifier>{f63c5691-5b7a-4e82-9b29-b44593480282}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\lua">
-      <UniqueIdentifier>{d0bc663f-642c-4a9e-a67c-a5d47f166fd6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\config">
-      <UniqueIdentifier>{9c963073-4508-4e5c-876b-d390a26799a4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\render">
-      <UniqueIdentifier>{e373eeaa-8043-4815-beb7-cccfad3d4628}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{a82cba23-9de0-45c2-b1e3-2eb1666702de}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="backends">
-      <UniqueIdentifier>{c50cb6cf-2d4e-43c2-b31f-80e56b39d732}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="assets">
-      <UniqueIdentifier>{25379a9e-72bd-4aea-b7e7-41d89e6af6a5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="scripts">
-      <UniqueIdentifier>{6e4c74a5-588f-438e-97b3-6f76f28c66aa}</UniqueIdentifier>
-    </Filter>
+    <Filter Include="src"><UniqueIdentifier>{4fc737f1-c7a5-4376-a066-2a32d752a2ff}</UniqueIdentifier></Filter>
+    <Filter Include="src\api"><UniqueIdentifier>{f63c5691-5b7a-4e82-9b29-b44593480282}</UniqueIdentifier></Filter>
+    <Filter Include="src\lua"><UniqueIdentifier>{d0bc663f-642c-4a9e-a67c-a5d47f166fd6}</UniqueIdentifier></Filter>
+    <Filter Include="src\config"><UniqueIdentifier>{9c963073-4508-4e5c-876b-d390a26799a4}</UniqueIdentifier></Filter>
+    <Filter Include="src\menu"><UniqueIdentifier>{2c57ab93-5e9e-4f22-84b7-e4a91e330e1a}</UniqueIdentifier></Filter>
+    <Filter Include="src\render"><UniqueIdentifier>{e373eeaa-8043-4815-beb7-cccfad3d4628}</UniqueIdentifier></Filter>
+    <Filter Include="imgui"><UniqueIdentifier>{a82cba23-9de0-45c2-b1e3-2eb1666702de}</UniqueIdentifier></Filter>
+    <Filter Include="backends"><UniqueIdentifier>{c50cb6cf-2d4e-43c2-b31f-80e56b39d732}</UniqueIdentifier></Filter>
+    <Filter Include="assets"><UniqueIdentifier>{25379a9e-72bd-4aea-b7e7-41d89e6af6a5}</UniqueIdentifier></Filter>
+    <Filter Include="assets\vehicles"><UniqueIdentifier>{1db404c0-b3c7-48bb-9994-da91bf49398d}</UniqueIdentifier></Filter>
+    <Filter Include="scripts"><UniqueIdentifier>{6e4c74a5-588f-438e-97b3-6f76f28c66aa}</UniqueIdentifier></Filter>
   </ItemGroup>
+
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\api\FileSystemAPI.cpp">
-      <Filter>src\api</Filter>
-    </ClCompile>
-    <ClCompile Include="src\api\ImGuiAPI.cpp">
-      <Filter>src\api</Filter>
-    </ClCompile>
-    <ClCompile Include="src\api\LoggerAPI.cpp">
-      <Filter>src\api</Filter>
-    </ClCompile>
-    <ClCompile Include="src\config\ConfigManager.cpp">
-      <Filter>src\config</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lua\Lua_Binding_Library.cpp">
-      <Filter>src\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lua\Lua_Commands.cpp">
-      <Filter>src\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lua\Lua_Manager.cpp">
-      <Filter>src\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lua\Lua_Module.cpp">
-      <Filter>src\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lua\Lua_Module_Manager.cpp">
-      <Filter>src\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lua\Lua_Scripts_Manager.cpp">
-      <Filter>src\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\render\blur.cpp">
-      <Filter>src\render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\imgui_demo.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\imgui_tables.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\misc\cpp\imgui_stdlib.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\backends\imgui_impl_win32.cpp">
-      <Filter>backends</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\backends\imgui_impl_dx9.cpp">
-      <Filter>backends</Filter>
-    </ClCompile>
+    <ClCompile Include="src\main.cpp"><Filter>src</Filter></ClCompile>
+    <ClCompile Include="src\api\FileSystemAPI.cpp"><Filter>src\api</Filter></ClCompile>
+    <ClCompile Include="src\api\ImGuiAPI.cpp"><Filter>src\api</Filter></ClCompile>
+    <ClCompile Include="src\api\LoggerAPI.cpp"><Filter>src\api</Filter></ClCompile>
+    <ClCompile Include="src\config\ConfigManager.cpp"><Filter>src\config</Filter></ClCompile>
+    <ClCompile Include="src\lua\Lua_Binding_Library.cpp"><Filter>src\lua</Filter></ClCompile>
+    <ClCompile Include="src\lua\Lua_Commands.cpp"><Filter>src\lua</Filter></ClCompile>
+    <ClCompile Include="src\lua\Lua_Manager.cpp"><Filter>src\lua</Filter></ClCompile>
+    <ClCompile Include="src\lua\Lua_Module.cpp"><Filter>src\lua</Filter></ClCompile>
+    <ClCompile Include="src\lua\Lua_Module_Manager.cpp"><Filter>src\lua</Filter></ClCompile>
+    <ClCompile Include="src\lua\Lua_Scripts_Manager.cpp"><Filter>src\lua</Filter></ClCompile>
+    <ClCompile Include="src\menu\VehicleMenu.cpp"><Filter>src\menu</Filter></ClCompile>
+    <ClCompile Include="src\render\blur.cpp"><Filter>src\render</Filter></ClCompile>
+    <ClCompile Include="src\render\VehiclePreview.cpp"><Filter>src\render</Filter></ClCompile>
+    <ClCompile Include="..\..\imgui.cpp"><Filter>imgui</Filter></ClCompile>
+    <ClCompile Include="..\..\imgui_demo.cpp"><Filter>imgui</Filter></ClCompile>
+    <ClCompile Include="..\..\imgui_draw.cpp"><Filter>imgui</Filter></ClCompile>
+    <ClCompile Include="..\..\imgui_tables.cpp"><Filter>imgui</Filter></ClCompile>
+    <ClCompile Include="..\..\imgui_widgets.cpp"><Filter>imgui</Filter></ClCompile>
+    <ClCompile Include="..\..\misc\cpp\imgui_stdlib.cpp"><Filter>imgui</Filter></ClCompile>
+    <ClCompile Include="..\..\backends\imgui_impl_win32.cpp"><Filter>backends</Filter></ClCompile>
+    <ClCompile Include="..\..\backends\imgui_impl_dx9.cpp"><Filter>backends</Filter></ClCompile>
   </ItemGroup>
+
   <ItemGroup>
-    <ClInclude Include="src\api\FileSystemAPI.hpp">
-      <Filter>src\api</Filter>
-    </ClInclude>
-    <ClInclude Include="src\api\ImGuiAPI.hpp">
-      <Filter>src\api</Filter>
-    </ClInclude>
-    <ClInclude Include="src\api\LoggerAPI.hpp">
-      <Filter>src\api</Filter>
-    </ClInclude>
-    <ClInclude Include="src\config\ConfigManager.hpp">
-      <Filter>src\config</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua\Lua_Binding_Library.hpp">
-      <Filter>src\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua\Lua_Commands.hpp">
-      <Filter>src\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua\Lua_Manager.hpp">
-      <Filter>src\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua\Lua_Module.hpp">
-      <Filter>src\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua\Lua_Module_Manager.hpp">
-      <Filter>src\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua\Lua_Scripts_Manager.hpp">
-      <Filter>src\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\render\blur.hpp">
-      <Filter>src\render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\imconfig.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\imgui_internal.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\misc\cpp\imgui_stdlib.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\backends\imgui_impl_win32.h">
-      <Filter>backends</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\backends\imgui_impl_dx9.h">
-      <Filter>backends</Filter>
-    </ClInclude>
-    <ClInclude Include="background_pic.h">
-      <Filter>assets</Filter>
-    </ClInclude>
-    <ClInclude Include="segue_font.h">
-      <Filter>assets</Filter>
-    </ClInclude>
-    <ClInclude Include="ico_font.h">
-      <Filter>assets</Filter>
-    </ClInclude>
-    <ClInclude Include="blur_x.h">
-      <Filter>assets</Filter>
-    </ClInclude>
-    <ClInclude Include="blur_y.h">
-      <Filter>assets</Filter>
-    </ClInclude>
+    <ClInclude Include="src\api\FileSystemAPI.hpp"><Filter>src\api</Filter></ClInclude>
+    <ClInclude Include="src\api\ImGuiAPI.hpp"><Filter>src\api</Filter></ClInclude>
+    <ClInclude Include="src\api\LoggerAPI.hpp"><Filter>src\api</Filter></ClInclude>
+    <ClInclude Include="src\config\ConfigManager.hpp"><Filter>src\config</Filter></ClInclude>
+    <ClInclude Include="src\lua\Lua_Binding_Library.hpp"><Filter>src\lua</Filter></ClInclude>
+    <ClInclude Include="src\lua\Lua_Commands.hpp"><Filter>src\lua</Filter></ClInclude>
+    <ClInclude Include="src\lua\Lua_Manager.hpp"><Filter>src\lua</Filter></ClInclude>
+    <ClInclude Include="src\lua\Lua_Module.hpp"><Filter>src\lua</Filter></ClInclude>
+    <ClInclude Include="src\lua\Lua_Module_Manager.hpp"><Filter>src\lua</Filter></ClInclude>
+    <ClInclude Include="src\lua\Lua_Scripts_Manager.hpp"><Filter>src\lua</Filter></ClInclude>
+    <ClInclude Include="src\menu\VehicleMenu.hpp"><Filter>src\menu</Filter></ClInclude>
+    <ClInclude Include="src\render\blur.hpp"><Filter>src\render</Filter></ClInclude>
+    <ClInclude Include="src\render\VehiclePreview.hpp"><Filter>src\render</Filter></ClInclude>
+    <ClInclude Include="..\..\imconfig.h"><Filter>imgui</Filter></ClInclude>
+    <ClInclude Include="..\..\imgui.h"><Filter>imgui</Filter></ClInclude>
+    <ClInclude Include="..\..\imgui_internal.h"><Filter>imgui</Filter></ClInclude>
+    <ClInclude Include="..\..\misc\cpp\imgui_stdlib.h"><Filter>imgui</Filter></ClInclude>
+    <ClInclude Include="..\..\backends\imgui_impl_win32.h"><Filter>backends</Filter></ClInclude>
+    <ClInclude Include="..\..\backends\imgui_impl_dx9.h"><Filter>backends</Filter></ClInclude>
+    <ClInclude Include="background_pic.h"><Filter>assets</Filter></ClInclude>
+    <ClInclude Include="segue_font.h"><Filter>assets</Filter></ClInclude>
+    <ClInclude Include="ico_font.h"><Filter>assets</Filter></ClInclude>
+    <ClInclude Include="blur_x.h"><Filter>assets</Filter></ClInclude>
+    <ClInclude Include="blur_y.h"><Filter>assets</Filter></ClInclude>
   </ItemGroup>
+
   <ItemGroup>
     <None Include="..\README.txt" />
-    <None Include="..\..\misc\debuggers\imgui.natvis">
-      <Filter>imgui</Filter>
-    </None>
-    <None Include="scripts\imgui_example.lua">
-      <Filter>scripts</Filter>
-    </None>
+    <None Include="..\..\misc\debuggers\imgui.natvis"><Filter>imgui</Filter></None>
+    <None Include="scripts\imgui_example.lua"><Filter>scripts</Filter></None>
     <None Include="setting.json" />
+    <Content Include="Images\Vehicles\README.md"><Filter>assets\vehicles</Filter></Content>
   </ItemGroup>
 </Project>
